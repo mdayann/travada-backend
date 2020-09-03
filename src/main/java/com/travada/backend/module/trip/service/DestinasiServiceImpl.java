@@ -1,8 +1,10 @@
 package com.travada.backend.module.trip.service;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.api.ApiResponse;
 import com.cloudinary.utils.ObjectUtils;
 import com.travada.backend.config.CloudinaryConfig;
+import com.travada.backend.exception.DataNotFoundException;
 import com.travada.backend.module.trip.model.Destinasi;
 import com.travada.backend.module.trip.repository.DestinasiRepository;
 import com.travada.backend.utils.BaseResponse;
@@ -14,10 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service("destinasiServiceImpl")
 public class DestinasiServiceImpl implements DestinasiService {
@@ -28,13 +28,13 @@ public class DestinasiServiceImpl implements DestinasiService {
     private CloudinaryConfig cloudc;
 
     @Transactional
-    public Destinasi saveDestinasi(Destinasi destinasi, List<String> photos){
+    public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos){
         destinasi.setGambarList(photos);
-        Destinasi destinasiResponse = destinasiRepository.save(destinasi);
-        return destinasiResponse;
+        destinasiRepository.save(destinasi);
+        return ResponseEntity.ok().build();
     }
 
-    @Override
+    @Transactional
     public String uploadImage(MultipartFile file) {
         String gambar = new String();
         try {
@@ -54,25 +54,22 @@ public class DestinasiServiceImpl implements DestinasiService {
     }
 
     @Transactional
-    public BaseResponse findById(Long id) {
-        BaseResponse baseResponse = new BaseResponse();
+    public Destinasi findById(Long id) {
         Destinasi destinasi = destinasiRepository.findById(id)
-                .orElseThrow(null);
-        baseResponse.setStatus(HttpStatus.OK);
-        baseResponse.setData(destinasi);
+                .orElseThrow(()-> new DataNotFoundException(id));
 
-        return baseResponse;
+        return destinasi;
     }
 
     @Transactional
-    public BaseResponse editById(Long id, Destinasi newDestinasi) {
-        BaseResponse baseResponse = new BaseResponse();
+    public Destinasi editById(Long id, Destinasi newDestinasi) {
         Destinasi destinasi = destinasiRepository.findById(id)
                 .orElseThrow(null);
         destinasi.setBenua(newDestinasi.getBenua());
         destinasi.setBerangkat(newDestinasi.getBerangkat());
+        destinasi.setPulang(newDestinasi.getPulang());
         destinasi.setDeskripsi(newDestinasi.getDeskripsi());
-        destinasi.setDurasi(newDestinasi.getDurasi());
+        destinasi.setDurasi(newDestinasi.getBerangkat(),newDestinasi.getPulang());
         destinasi.setFasilitas(newDestinasi.getFasilitas());
         destinasi.setHarga_satuan(newDestinasi.getHarga_satuan());
         destinasi.setInfo_kesehatan_keamanan(newDestinasi.getInfo_kesehatan_keamanan());
@@ -82,13 +79,11 @@ public class DestinasiServiceImpl implements DestinasiService {
         destinasi.setLokal(newDestinasi.getLokal());
         destinasi.setNama_trip(newDestinasi.getNama_trip());
         destinasi.setOverview(newDestinasi.getOverview());
-        destinasi.setPulang(newDestinasi.getPulang());
+
         destinasi.setRencanaList(newDestinasi.getRencanaList());
         destinasiRepository.save(destinasi);
 
-        baseResponse.setStatus(HttpStatus.OK);
-        baseResponse.setData(destinasi);
-        return baseResponse;
+        return destinasi;
     }
 
     @Transactional
@@ -97,7 +92,7 @@ public class DestinasiServiceImpl implements DestinasiService {
                 .map(destinasi -> {
                     destinasiRepository.delete(destinasi);
                     return ResponseEntity.ok().build();
-                }).orElseThrow();
+                }).orElseThrow(()->new DataNotFoundException(id));
     }
 
 }

@@ -11,15 +11,15 @@ import java.util.List;
 
 @Component
 public interface DestinasiService {
-    public Destinasi saveDestinasi(Destinasi destinasi, List<String> photos);
+    public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos);
 
     public String uploadImage(MultipartFile file);
 
     public List<Destinasi> findAll();
 
-    public BaseResponse findById(Long id);
+    public Destinasi findById(Long id);
 
-    public BaseResponse editById(Long id, Destinasi destinasi);
+    public Destinasi editById(Long id, Destinasi destinasi);
 
     public ResponseEntity<?> dropDestinasi(Long id);
 }

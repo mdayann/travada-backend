@@ -1,11 +1,15 @@
 package com.travada.backend.module.trip.model;
 
 import com.travada.backend.utils.AuditModel;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -22,16 +26,17 @@ public class Destinasi extends AuditModel {
     private String nama_trip;
     private String benua;
     private Boolean lokal;
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "gambar_trip",joinColumns = @JoinColumn(name = "id_trip"))
     private List<String> gambarList;
-    private int durasi;
     private int kapasitas;
     private Long harga_satuan;
     private String overview;
     private String deskripsi;
-    private Date berangkat;
-    private Date pulang;
+    private LocalDate berangkat;
+    private LocalDate pulang;
+    @Setter(AccessLevel.NONE)
+    private int durasi;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "rencana_trip",joinColumns = @JoinColumn(name = "id_trip"))
     private List<RencanaPerjalanan> rencanaList;
@@ -41,4 +46,9 @@ public class Destinasi extends AuditModel {
     private String info_waktu_cuaca;
     private String info_persiapan;
     private String info_kesehatan_keamanan;
+
+    public void setDurasi(LocalDate berangkat, LocalDate pulang) {
+       Period period = Period.between(berangkat, pulang);
+       this.durasi = period.getDays();
+    }
 }
