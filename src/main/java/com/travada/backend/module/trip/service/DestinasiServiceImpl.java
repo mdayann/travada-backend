@@ -2,6 +2,7 @@ package com.travada.backend.module.trip.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.travada.backend.config.CloudinaryConfig;
 import com.travada.backend.module.trip.model.Destinasi;
 import com.travada.backend.module.trip.repository.DestinasiRepository;
 import com.travada.backend.utils.BaseResponse;
@@ -13,7 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service("destinasiServiceImpl")
@@ -21,14 +24,27 @@ public class DestinasiServiceImpl implements DestinasiService {
     @Autowired
     private DestinasiRepository destinasiRepository;
 
+    @Autowired
+    private CloudinaryConfig cloudc;
 
     @Transactional
-    public Destinasi saveDestinasi(Destinasi destinasi, MultipartFile photos) throws IOException {
-//        Cloudinary cloudinary = new Cloudinary("cloudinary://243347769785551:fM1ZmMMotBJyEgf3u3XpfxQhJik@dkazavkbg");
-//        cloudinary.uploader().upload(photos, ObjectUtils.emptyMap());
-//        destinasi.setGambarList();
+    public Destinasi saveDestinasi(Destinasi destinasi, List<String> photos){
+        destinasi.setGambarList(photos);
         Destinasi destinasiResponse = destinasiRepository.save(destinasi);
         return destinasiResponse;
+    }
+
+    @Override
+    public String uploadImage(MultipartFile file) {
+        String gambar = new String();
+        try {
+            Map uploadResult =cloudc.upload(file.getBytes(),
+                    ObjectUtils.asMap("resourcetype","auto"));
+            gambar = uploadResult.get("url").toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return gambar ;
     }
 
     @Transactional

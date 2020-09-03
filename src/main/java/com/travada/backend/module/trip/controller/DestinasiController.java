@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,8 +29,20 @@ public class DestinasiController {
     }
 
     @PostMapping()
-    public Destinasi createDestinasi(@RequestBody Destinasi destinasi, @RequestParam MultipartFile files) throws IOException {
-        return destinasiService.saveDestinasi(destinasi, files);
+    public Destinasi createDestinasi(@RequestBody Destinasi destinasi,
+                                     @RequestParam MultipartFile file1,
+                                     @RequestParam MultipartFile file2,
+                                     @RequestParam MultipartFile file3,
+                                     @RequestParam MultipartFile file4,
+                                     @RequestParam MultipartFile file5) {
+        List<String> gambar = new ArrayList<>();
+        gambar.add(destinasiService.uploadImage(file1));
+        gambar.add(destinasiService.uploadImage(file2));
+        gambar.add(destinasiService.uploadImage(file3));
+        gambar.add(destinasiService.uploadImage(file4));
+        gambar.add(destinasiService.uploadImage(file5));
+
+        return destinasiService.saveDestinasi(destinasi, gambar);
     }
 
     @PutMapping("/{id}")

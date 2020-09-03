@@ -11,7 +11,9 @@ import java.util.List;
 
 @Component
 public interface DestinasiService {
-    public Destinasi saveDestinasi(Destinasi destinasi, MultipartFile photos) throws IOException;
+    public Destinasi saveDestinasi(Destinasi destinasi, List<String> photos);
+
+    public String uploadImage(MultipartFile file);
 
     public List<Destinasi> findAll();
 
