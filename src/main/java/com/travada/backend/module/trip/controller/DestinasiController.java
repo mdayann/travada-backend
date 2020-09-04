@@ -44,21 +44,26 @@ public class DestinasiController {
         response.setData(destinasiService.findById(id));
         return response;
     }
+    @PostMapping("/gambar")
+    public String uploadImage(@RequestParam MultipartFile gambar){
+        return destinasiService.uploadImage(gambar);
+    }
 
     @PostMapping()
-    public ResponseEntity<?> createDestinasi(@ModelAttribute Destinasi destinasi,
-                                             @RequestParam MultipartFile file1,
-                                             @RequestParam MultipartFile file2,
-                                             @RequestParam MultipartFile file3,
-                                             @RequestParam MultipartFile file4,
-                                             @RequestParam MultipartFile file5) {
-        List<String> gambar = new ArrayList<>();
-        gambar.add(destinasiService.uploadImage(file1));
-        gambar.add(destinasiService.uploadImage(file2));
-        gambar.add(destinasiService.uploadImage(file3));
-        gambar.add(destinasiService.uploadImage(file4));
-        gambar.add(destinasiService.uploadImage(file5));
-        destinasiService.saveDestinasi(destinasi, gambar);
+    public ResponseEntity<?> createDestinasi(@RequestBody Destinasi destinasi
+//                                             @RequestParam MultipartFile file1,
+//                                             @RequestParam MultipartFile file2,
+//                                             @RequestParam MultipartFile file3,
+//                                             @RequestParam MultipartFile file4,
+//                                             @RequestParam MultipartFile file5
+                                             ) {
+//        List<String> gambar = new ArrayList<>();
+//        gambar.add(destinasiService.uploadImage(file1));
+//        gambar.add(destinasiService.uploadImage(file2));
+//        gambar.add(destinasiService.uploadImage(file3));
+//        gambar.add(destinasiService.uploadImage(file4));
+//        gambar.add(destinasiService.uploadImage(file5));
+        destinasiService.saveDestinasi(destinasi);
         return new ResponseEntity(HttpStatus.OK);
     }
 

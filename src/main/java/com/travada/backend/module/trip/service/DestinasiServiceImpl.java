@@ -29,8 +29,8 @@ public class DestinasiServiceImpl implements DestinasiService {
     private CloudinaryConfig cloudc;
 
     @Transactional
-    public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos) {
-        destinasi.setGambar_list(photos);
+    public ResponseEntity<?> saveDestinasi(Destinasi destinasi) {
+//        destinasi.setGambar_list(photos);
         destinasiRepository.save(destinasi);
         return ResponseEntity.ok().build();
     }
