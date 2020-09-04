@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component
 public interface DestinasiService {
-    public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos);
+    public ResponseEntity<?> saveDestinasi(Destinasi destinasi);
 
     public String uploadImage(MultipartFile file);
 
