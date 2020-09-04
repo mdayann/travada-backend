@@ -28,7 +28,7 @@ public class Destinasi extends AuditModel {
     private Boolean lokal;
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "gambar_trip",joinColumns = @JoinColumn(name = "id_trip"))
-    private List<String> gambarList;
+    private List<String> gambar_list;
     private int kapasitas;
     private Long harga_satuan;
     private String overview;
@@ -46,6 +46,9 @@ public class Destinasi extends AuditModel {
     private String info_waktu_cuaca;
     private String info_persiapan;
     private String info_kesehatan_keamanan;
+
+    private int kapasitas_terisi;
+    private int popularitas;
 
     public void setDurasi(LocalDate berangkat, LocalDate pulang) {
        Period period = Period.between(berangkat, pulang);

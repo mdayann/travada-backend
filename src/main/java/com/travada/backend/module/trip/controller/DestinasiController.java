@@ -22,6 +22,14 @@ public class DestinasiController {
     public List<Destinasi> getAll() {
         return destinasiService.findAll();
     }
+    @GetMapping("/populer")
+    public List<Destinasi> getPopuler(){return destinasiService.findAllSortByPopularitas();}
+    @GetMapping("/pilihan")
+    public List<Destinasi> getPilihan(){return destinasiService.findAllSortByPilihan();}
+    @GetMapping("/harga")
+    public List<Destinasi> getRangeHarga(@RequestParam int termurah, @RequestParam int termahal){
+        return destinasiService.findAllFilterHarga(termurah,termahal);
+    }
 
     @GetMapping("/{id}")
     public BaseResponse getById(@PathVariable Long id) {

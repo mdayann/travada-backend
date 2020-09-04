@@ -9,6 +9,7 @@ import com.travada.backend.module.trip.model.Destinasi;
 import com.travada.backend.module.trip.repository.DestinasiRepository;
 import com.travada.backend.utils.BaseResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class DestinasiServiceImpl implements DestinasiService {
 
     @Transactional
     public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos){
-        destinasi.setGambarList(photos);
+        destinasi.setGambar_list(photos);
         destinasiRepository.save(destinasi);
         return ResponseEntity.ok().build();
     }
@@ -54,10 +55,28 @@ public class DestinasiServiceImpl implements DestinasiService {
     }
 
     @Transactional
+    public List<Destinasi> findAllSortByPopularitas() {
+        List<Destinasi> destinasiList = destinasiRepository.findAll(Sort.by("popularitas").descending());
+        return destinasiList;
+    }
+
+    @Transactional
+    public List<Destinasi> findAllSortByPilihan() {
+        List<Destinasi> destinasiList = destinasiRepository.findAll(Sort.by("harga_satuan").ascending().and(Sort.by("kapasitas").descending()));
+        return destinasiList;
+    }
+
+    @Transactional
+    public List<Destinasi> findAllFilterHarga(int termurah, int termahal) {
+        List<Destinasi> destinasiList = destinasiRepository.findAllByFilterHarga(termurah,termahal);
+        return destinasiList;
+    }
+
+    @Transactional
     public Destinasi findById(Long id) {
         Destinasi destinasi = destinasiRepository.findById(id)
                 .orElseThrow(()-> new DataNotFoundException(id));
-
+        destinasi.setPopularitas(destinasi.getPopularitas()+1);
         return destinasi;
     }
 
