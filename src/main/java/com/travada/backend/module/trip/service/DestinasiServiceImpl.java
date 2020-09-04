@@ -29,7 +29,7 @@ public class DestinasiServiceImpl implements DestinasiService {
     private CloudinaryConfig cloudc;
 
     @Transactional
-    public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos){
+    public ResponseEntity<?> saveDestinasi(Destinasi destinasi, List<String> photos) {
         destinasi.setGambar_list(photos);
         destinasiRepository.save(destinasi);
         return ResponseEntity.ok().build();
@@ -39,13 +39,13 @@ public class DestinasiServiceImpl implements DestinasiService {
     public String uploadImage(MultipartFile file) {
         String gambar = new String();
         try {
-            Map uploadResult =cloudc.upload(file.getBytes(),
-                    ObjectUtils.asMap("resourcetype","auto"));
+            Map uploadResult = cloudc.upload(file.getBytes(),
+                    ObjectUtils.asMap("resourcetype", "auto"));
             gambar = uploadResult.get("url").toString();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return gambar ;
+        return gambar;
     }
 
     @Transactional
@@ -67,16 +67,22 @@ public class DestinasiServiceImpl implements DestinasiService {
     }
 
     @Transactional
-    public List<Destinasi> findAllFilterHarga(int termurah, int termahal) {
-        List<Destinasi> destinasiList = destinasiRepository.findAllByFilterHarga(termurah,termahal);
+    public List<Destinasi> findAllFilterHarga(int termurah, int termahal, String benua) {
+        List<Destinasi> destinasiList = destinasiRepository.findAllByFilterHarga(termurah, termahal, benua);
+        return destinasiList;
+    }
+
+    @Override
+    public List<Destinasi> search(String keyword) {
+        List<Destinasi> destinasiList = destinasiRepository.search(keyword);
         return destinasiList;
     }
 
     @Transactional
     public Destinasi findById(Long id) {
         Destinasi destinasi = destinasiRepository.findById(id)
-                .orElseThrow(()-> new DataNotFoundException(id));
-        destinasi.setPopularitas(destinasi.getPopularitas()+1);
+                .orElseThrow(() -> new DataNotFoundException(id));
+        destinasi.setPopularitas(destinasi.getPopularitas() + 1);
         return destinasi;
     }
 
@@ -88,7 +94,7 @@ public class DestinasiServiceImpl implements DestinasiService {
         destinasi.setBerangkat(newDestinasi.getBerangkat());
         destinasi.setPulang(newDestinasi.getPulang());
         destinasi.setDeskripsi(newDestinasi.getDeskripsi());
-        destinasi.setDurasi(newDestinasi.getBerangkat(),newDestinasi.getPulang());
+        destinasi.setDurasi(newDestinasi.getBerangkat(), newDestinasi.getPulang());
         destinasi.setFasilitas(newDestinasi.getFasilitas());
         destinasi.setHarga_satuan(newDestinasi.getHarga_satuan());
         destinasi.setInfo_kesehatan_keamanan(newDestinasi.getInfo_kesehatan_keamanan());
@@ -111,7 +117,7 @@ public class DestinasiServiceImpl implements DestinasiService {
                 .map(destinasi -> {
                     destinasiRepository.delete(destinasi);
                     return ResponseEntity.ok().build();
-                }).orElseThrow(()->new DataNotFoundException(id));
+                }).orElseThrow(() -> new DataNotFoundException(id));
     }
 
 }

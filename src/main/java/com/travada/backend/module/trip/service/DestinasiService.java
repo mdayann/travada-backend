@@ -19,7 +19,9 @@ public interface DestinasiService {
 
     public List<Destinasi> findAllSortByPilihan();
 
-    public List<Destinasi> findAllFilterHarga(int termurah, int termahal);
+    public List<Destinasi> findAllFilterHarga(int termurah, int termahal, String benua);
+
+    public List<Destinasi> search(String keyword);
 
     public Destinasi findById(Long id);
 

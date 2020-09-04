@@ -27,8 +27,15 @@ public class DestinasiController {
     @GetMapping("/pilihan")
     public List<Destinasi> getPilihan(){return destinasiService.findAllSortByPilihan();}
     @GetMapping("/harga")
-    public List<Destinasi> getRangeHarga(@RequestParam int termurah, @RequestParam int termahal){
-        return destinasiService.findAllFilterHarga(termurah,termahal);
+    public List<Destinasi> getRangeHarga(@RequestParam int termurah, @RequestParam int termahal, @RequestParam String benua){
+        return destinasiService.findAllFilterHarga(termurah,termahal, benua);
+    }
+    @GetMapping("/pencarian")
+    public List<Destinasi> getPencarian(@RequestParam String keyword){
+        if(keyword!=null){
+            return destinasiService.search(keyword);
+        }
+        return destinasiService.findAll();
     }
 
     @GetMapping("/{id}")
