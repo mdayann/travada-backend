@@ -2,10 +2,8 @@ package com.travada.backend.module.user.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.travada.backend.utils.AuditModel;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -16,7 +14,8 @@ import java.util.Date;
 @NoArgsConstructor @AllArgsConstructor
 @Table(name = "users")
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class User {
+@Data
+public class User extends AuditModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
