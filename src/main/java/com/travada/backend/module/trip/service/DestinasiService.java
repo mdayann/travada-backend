@@ -1,31 +1,28 @@
 package com.travada.backend.module.trip.service;
 
 import com.travada.backend.module.trip.model.Destinasi;
+import com.travada.backend.utils.BaseResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @Component
 public interface DestinasiService {
-    public ResponseEntity<?> saveDestinasi(Destinasi destinasi);
+    BaseResponse saveDestinasi(Destinasi destinasi, MultipartFile[] foto);
 
-    public String uploadImage(MultipartFile file);
+    BaseResponse findAll();
 
-    public List<Destinasi> findAll();
+    BaseResponse findAllSortByPopularitas();
 
-    public List<Destinasi> findAllSortByPopularitas();
+    BaseResponse findAllSortByPilihan();
 
-    public List<Destinasi> findAllSortByPilihan();
+    BaseResponse findAllFilterHarga(Long termurah, Long termahal, String benua);
 
-    public List<Destinasi> findAllFilterHarga(int termurah, int termahal, String benua);
+    BaseResponse findAllBySearch(String keyword);
 
-    public List<Destinasi> search(String keyword);
+    BaseResponse findById(Long id);
 
-    public Destinasi findById(Long id);
+    BaseResponse editById(Long id, Destinasi destinasi, MultipartFile[] foto);
 
-    public Destinasi editById(Long id, Destinasi destinasi);
-
-    public ResponseEntity<?> dropDestinasi(Long id);
+    ResponseEntity<?> dropDestinasi(Long id);
 }

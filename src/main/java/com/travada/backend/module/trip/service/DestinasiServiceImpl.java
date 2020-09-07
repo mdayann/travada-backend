@@ -1,7 +1,5 @@
 package com.travada.backend.module.trip.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.api.ApiResponse;
 import com.cloudinary.utils.ObjectUtils;
 import com.travada.backend.config.CloudinaryConfig;
 import com.travada.backend.exception.DataNotFoundException;
@@ -17,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,86 +28,191 @@ public class DestinasiServiceImpl implements DestinasiService {
     private CloudinaryConfig cloudc;
 
     @Transactional
-    public ResponseEntity<?> saveDestinasi(Destinasi destinasi) {
-//        destinasi.setGambar_list(photos);
-        destinasiRepository.save(destinasi);
-        return ResponseEntity.ok().build();
-    }
-
-    @Transactional
-    public String uploadImage(MultipartFile file) {
-        String gambar = new String();
-        try {
-            Map uploadResult = cloudc.upload(file.getBytes(),
-                    ObjectUtils.asMap("resourcetype", "auto"));
-            gambar = uploadResult.get("url").toString();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public BaseResponse saveDestinasi(Destinasi destinasi, MultipartFile[] foto) {
+        BaseResponse baseResponse = new BaseResponse();
+        List<String> gambar = new ArrayList<>();
+        if (foto != null) {
+            for (MultipartFile file : foto) {
+                try {
+                    Map uploadResult = cloudc.upload(file.getBytes(),
+                            ObjectUtils.asMap("resourcetype", "auto"));
+                    gambar.add(uploadResult.get("url").toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        return gambar;
+        destinasi.setGambar_list(gambar);
+        destinasi.setPopularitas();
+        destinasi.setDurasi(destinasi.getBerangkat(),destinasi.getPulang());
+        destinasiRepository.save(destinasi);
+
+        baseResponse.setStatus(HttpStatus.CREATED);
+        baseResponse.setData(destinasi);
+        baseResponse.setMessage("Pembuatan destinasi trip telah berhasil");
+
+        return baseResponse;
     }
 
     @Transactional
-    public List<Destinasi> findAll() {
+    public BaseResponse findAll() {
+        BaseResponse baseResponse = new BaseResponse();
         List<Destinasi> destinasiList = destinasiRepository.findAll();
-        return destinasiList;
+
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setData(destinasiList);
+        baseResponse.setMessage("Pengambilan list data destinasi telah berhasil");
+        return baseResponse;
     }
 
     @Transactional
-    public List<Destinasi> findAllSortByPopularitas() {
+    public BaseResponse findAllSortByPopularitas() {
+        BaseResponse baseResponse = new BaseResponse();
         List<Destinasi> destinasiList = destinasiRepository.findAll(Sort.by("popularitas").descending());
-        return destinasiList;
+
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setData(destinasiList);
+        baseResponse.setMessage("Pengambilan list data destinasi berdasarkan popularitas telah berhasil");
+        return baseResponse;
     }
 
     @Transactional
-    public List<Destinasi> findAllSortByPilihan() {
-        List<Destinasi> destinasiList = destinasiRepository.findAll(Sort.by("harga_satuan").ascending().and(Sort.by("kapasitas").descending()));
-        return destinasiList;
+    public BaseResponse findAllSortByPilihan() {
+        BaseResponse baseResponse = new BaseResponse();
+        List<Destinasi> destinasiList = destinasiRepository.findAll(Sort.by("kapasitas").descending());
+
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setData(destinasiList);
+        baseResponse.setMessage("Pengambilan list data destinasi berdasarkan pilihan telah berhasil");
+        return baseResponse;
     }
 
     @Transactional
-    public List<Destinasi> findAllFilterHarga(int termurah, int termahal, String benua) {
-        List<Destinasi> destinasiList = destinasiRepository.findAllByFilterHarga(termurah, termahal, benua);
-        return destinasiList;
+    public BaseResponse findAllFilterHarga(Long termurah, Long termahal, String benua) {
+        BaseResponse baseResponse = new BaseResponse();
+        List<Destinasi> destinasiList = destinasiRepository.findAllByFilterHarga_Satuan( benua, termurah, termahal);
+
+        if (destinasiList == null) {
+            baseResponse.setStatus(HttpStatus.NO_CONTENT);
+            baseResponse.setData(null);
+            baseResponse.setMessage("Tidak ada data tersedia");
+            return baseResponse;
+        }
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setData(destinasiList);
+        baseResponse.setMessage("Pengambilan list data destinasi berdasarkan filter telah berhasil");
+        return baseResponse;
     }
 
-    @Override
-    public List<Destinasi> search(String keyword) {
+    @Transactional
+    public BaseResponse findAllBySearch(String keyword) {
+        BaseResponse baseResponse = new BaseResponse();
         List<Destinasi> destinasiList = destinasiRepository.search(keyword);
-        return destinasiList;
+
+        if (destinasiList == null) {
+            baseResponse.setStatus(HttpStatus.NO_CONTENT);
+            baseResponse.setData(null);
+            baseResponse.setMessage("Tidak ada data tersedia");
+            return baseResponse;
+        }
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setData(destinasiList);
+        baseResponse.setMessage("Pengambilan list data destinasi berdasarkan pencarian telah berhasil");
+        return baseResponse;
     }
 
     @Transactional
-    public Destinasi findById(Long id) {
+    public BaseResponse findById(Long id) {
+        BaseResponse baseResponse = new BaseResponse();
         Destinasi destinasi = destinasiRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException(id));
-        destinasi.setPopularitas(destinasi.getPopularitas() + 1);
-        return destinasi;
+        destinasi.setPopularitas();
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setData(destinasi);
+        baseResponse.setMessage("Pengambilan data dengan id " + id + " telah berhasil");
+        return baseResponse;
     }
 
     @Transactional
-    public Destinasi editById(Long id, Destinasi newDestinasi) {
-        Destinasi destinasi = destinasiRepository.findById(id)
-                .orElseThrow(null);
-        destinasi.setBenua(newDestinasi.getBenua());
-        destinasi.setBerangkat(newDestinasi.getBerangkat());
-        destinasi.setPulang(newDestinasi.getPulang());
-        destinasi.setDeskripsi(newDestinasi.getDeskripsi());
-        destinasi.setDurasi(newDestinasi.getBerangkat(), newDestinasi.getPulang());
-        destinasi.setFasilitas(newDestinasi.getFasilitas());
-        destinasi.setHarga_satuan(newDestinasi.getHarga_satuan());
-        destinasi.setInfo_kesehatan_keamanan(newDestinasi.getInfo_kesehatan_keamanan());
-        destinasi.setInfo_persiapan(newDestinasi.getInfo_persiapan());
-        destinasi.setInfo_waktu_cuaca(newDestinasi.getInfo_waktu_cuaca());
-        destinasi.setKapasitas(newDestinasi.getKapasitas());
-        destinasi.setLokal(newDestinasi.getLokal());
-        destinasi.setNama_trip(newDestinasi.getNama_trip());
-        destinasi.setOverview(newDestinasi.getOverview());
+    public BaseResponse editById(Long id, Destinasi newDestinasi, MultipartFile[] foto) {
+        BaseResponse baseResponse = new BaseResponse();
 
-        destinasi.setRencanaList(newDestinasi.getRencanaList());
+        Destinasi destinasi = destinasiRepository.findById(id)
+                .orElseThrow(() ->
+                        new DataNotFoundException(id)
+                );
+        if (newDestinasi.getNama_trip() != null) {
+            destinasi.setNama_trip(newDestinasi.getNama_trip());
+        }
+        if (newDestinasi.getBenua() != null) {
+            destinasi.setBenua(newDestinasi.getBenua());
+        }
+        if (newDestinasi.getLokal() != null) {
+            destinasi.setLokal(newDestinasi.getLokal());
+        }
+        if (foto != null) {
+            List<String> gambar = new ArrayList<>();
+            for (MultipartFile file : foto) {
+                try {
+                    Map uploadResult = cloudc.upload(file.getBytes(),
+                            ObjectUtils.asMap("resourcetype", "auto"));
+                    gambar.add(uploadResult.get("url").toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            destinasi.setGambar_list(gambar);
+        }
+        if (newDestinasi.getKapasitas() != 0) {
+            destinasi.setKapasitas(newDestinasi.getKapasitas());
+
+        }
+        if (newDestinasi.getHarga_satuan() != null) {
+            destinasi.setHarga_satuan(newDestinasi.getHarga_satuan());
+
+        }
+        if (newDestinasi.getOverview() != null) {
+            destinasi.setOverview(newDestinasi.getOverview());
+
+        }
+        if (newDestinasi.getDeskripsi() != null) {
+            destinasi.setDeskripsi(newDestinasi.getDeskripsi());
+
+        }
+        if (newDestinasi.getBerangkat() != null && newDestinasi.getPulang() != null) {
+            destinasi.setBerangkat(newDestinasi.getBerangkat());
+            destinasi.setPulang(newDestinasi.getPulang());
+            destinasi.setDurasi(newDestinasi.getBerangkat(),newDestinasi.getPulang());
+
+        }
+        if (newDestinasi.getRencana_list() != null) {
+            destinasi.setRencana_list(newDestinasi.getRencana_list());
+
+        }
+        if (newDestinasi.getFasilitas() != null) {
+            destinasi.setFasilitas(newDestinasi.getFasilitas());
+
+        }
+        if (newDestinasi.getInfo_waktu_cuaca() != null) {
+            destinasi.setInfo_waktu_cuaca(newDestinasi.getInfo_waktu_cuaca());
+
+        }
+        if (newDestinasi.getInfo_persiapan() != null) {
+            destinasi.setInfo_persiapan(newDestinasi.getInfo_persiapan());
+        }
+        if (newDestinasi.getInfo_kesehatan_keamanan() != null) {
+            destinasi.setInfo_kesehatan_keamanan(newDestinasi.getInfo_kesehatan_keamanan());
+        }
+        if (newDestinasi.getKapasitas_terisi() != 0) {
+            destinasi.setKapasitas_terisi(newDestinasi.getKapasitas_terisi());
+        }
+
         destinasiRepository.save(destinasi);
 
-        return destinasi;
+        baseResponse.setStatus(HttpStatus.CREATED);
+        baseResponse.setData(destinasi);
+        baseResponse.setMessage("Data dengan id " + destinasi.getId() + " telah diupdate");
+        return baseResponse;
     }
 
     @Transactional
