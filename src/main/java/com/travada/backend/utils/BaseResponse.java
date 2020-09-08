@@ -15,5 +15,5 @@ import java.util.ArrayList;
 public class BaseResponse {
     private HttpStatus status;
     private Object data;
-    private ArrayList<String> error;
+    private String message;
 }
