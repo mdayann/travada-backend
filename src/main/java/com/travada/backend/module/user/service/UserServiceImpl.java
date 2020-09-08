@@ -2,23 +2,32 @@ package com.travada.backend.module.user.service;
 
 import com.cloudinary.utils.ObjectUtils;
 import com.travada.backend.config.CloudinaryConfig;
-import com.travada.backend.module.user.dto.ConfirmationDto;
-import com.travada.backend.module.user.dto.CreateUserDto;
-import com.travada.backend.module.user.dto.RegistrationDto;
-import com.travada.backend.module.user.dto.ResendCodeDto;
+import com.travada.backend.config.security.JwtTokenProvider;
+import com.travada.backend.exception.AppException;
+import com.travada.backend.module.user.dto.*;
+import com.travada.backend.module.user.model.Role;
+import com.travada.backend.module.user.model.RoleName;
 import com.travada.backend.module.user.model.User;
+import com.travada.backend.module.user.repository.RoleRepository;
 import com.travada.backend.module.user.repository.UserRepository;
 import com.travada.backend.utils.BaseResponse;
 import com.travada.backend.utils.ModelMapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -37,7 +46,18 @@ public class UserServiceImpl implements UserService {
     @Autowired
     CloudinaryConfig cloudinary;
 
-    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    JwtTokenProvider tokenProvider;
+
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository) {
@@ -48,7 +68,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
-    public User findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
@@ -73,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
             //Lookup user in database by email and username
             User existEmail = findByEmail(createUser.getEmail());
-            User existUsername = findByUsername(createUser.getUsername());
+            Optional<User> existUsername = findByUsername(createUser.getUsername());
 
             if (existEmail != null) {
                 return new ResponseEntity(new BaseResponse
@@ -82,13 +102,14 @@ public class UserServiceImpl implements UserService {
                                 "Email sudah digunakan"),
                         HttpStatus.BAD_REQUEST);
             }
-            if (existUsername != null) {
+            if (existUsername.isPresent()) {
                 return new ResponseEntity(new BaseResponse
                         (HttpStatus.BAD_REQUEST,
                                 null,
                                 "Username sudah digunakan"),
                         HttpStatus.BAD_REQUEST);
             }
+
 
             //Disable user until they confirm
             createUser.setActive(false);
@@ -123,8 +144,8 @@ public class UserServiceImpl implements UserService {
             createUser.setConfirmationCode(confirmationCode);
 
             //Set encode password
-            String encodedPassword = passwordEncoder.encode(createUser.getPassword());
 
+            String encodedPassword = passwordEncoder.encode(createUser.getPassword());
             user.setPassword(encodedPassword);
 
             user.setUsername(createUser.getUsername());
@@ -138,15 +159,22 @@ public class UserServiceImpl implements UserService {
             user.setActive(createUser.isActive());
             user.setConfirmationCode(createUser.getConfirmationCode());
 
+            Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+                    .orElseThrow(() -> new AppException("User Role not set."));
+
+            user.setRoles(Collections.singleton(userRole));
+
+            System.out.println(createUser.getEmail());
+            System.out.println(user);
+
             //Save user
             saveUser(user);
 
             //Send confirmation email
 
-
             emailService.sendMail(createUser.getEmail(),
                     "Konfirmasi Pendaftaran Anda",
-                            "Kode anda : " + user.getConfirmationCode());
+                    "Kode anda : " + user.getConfirmationCode());
 
             registrationDto.setUsername(createUser.getUsername());
             registrationDto.setEmail(createUser.getEmail());
@@ -172,11 +200,13 @@ public class UserServiceImpl implements UserService {
         try {
 
             //Find the user associated with associated code
-            User existUser = userRepository.findByUsername(confirmUser.getUsername());
+            User existUser = userRepository.findByUsername(confirmUser.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+            ;
 
             String confirmCode = confirmUser.getConfirmationCode();
             String sentCode = existUser.getConfirmationCode();
-            System.out.println(confirmCode==sentCode);
+            System.out.println(confirmCode == sentCode);
 
             try {
                 if (confirmCode.equals(sentCode) || existUser.isActive()) {
@@ -274,5 +304,73 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.BAD_GATEWAY);
         }
     }
+
+    @Override
+    public ResponseEntity<?> authenticateUser(LoginDto loginDto) {
+
+        try {
+
+            //Validate password
+
+            Optional<User> existUser = findByUsername(loginDto.getUsername());
+            if (existUser.isEmpty()) {
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                null,
+                                "Username atau password salah"),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            String rawPassword = loginDto.getPassword();
+            String encodedPassword = existUser.get().getPassword();
+            boolean isPasswordMatch = passwordEncoder.matches(rawPassword, encodedPassword);
+
+            if (!isPasswordMatch) {
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                null,
+                                "Username atau password salah"),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            //Check if user active
+
+            boolean isActive = existUser.get().isActive();
+
+            if (!isActive) {
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                null,
+                                "Akun anda belum aktif"),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDto.getUsername(),
+                            loginDto.getPassword()
+                    )
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = tokenProvider.generateToken(authentication);
+            return new ResponseEntity(new BaseResponse
+                    (HttpStatus.OK,
+                            new JwtAuthenticationResponse(jwt),
+                            "Login berhasil"),
+                    HttpStatus.OK);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity(new BaseResponse
+                    (HttpStatus.BAD_GATEWAY,
+                            null,
+                            "Server error"),
+                    HttpStatus.BAD_GATEWAY);
+        }
+
+    }
+
 
 }

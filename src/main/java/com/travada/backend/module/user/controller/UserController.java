@@ -2,6 +2,7 @@ package com.travada.backend.module.user.controller;
 
 import com.travada.backend.module.user.dto.ConfirmationDto;
 import com.travada.backend.module.user.dto.CreateUserDto;
+import com.travada.backend.module.user.dto.LoginDto;
 import com.travada.backend.module.user.dto.ResendCodeDto;
 import com.travada.backend.module.user.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ public class UserController {
 
     @Autowired
     private UserServiceImpl userService;
+
 
     //Create New User
     @PostMapping("/register")
@@ -38,5 +40,12 @@ public class UserController {
     public ResponseEntity<?> resendCode(@RequestBody ResendCodeDto resendCodeDto) {
 
         return userService.resendCode(resendCodeDto);
+    }
+
+    //Login
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
+
+        return userService.authenticateUser(loginDto);
     }
 }
