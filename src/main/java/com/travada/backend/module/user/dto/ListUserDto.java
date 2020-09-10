@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -15,7 +14,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class CreateUserDto {
+public class ListUserDto {
+
+    private Long id;
 
     private String nama_lengkap;
 
@@ -27,19 +28,18 @@ public class CreateUserDto {
 
     private Long no_rekening;
 
+    private String fotoKtp;
+
+    private String selfieKtp;
+
     private Long no_ktp;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
     private Date tgl_lahir;
 
     private String jenis_kelamin;
 
-    private Long pin;
-
-    private String password;
-
     private boolean isActive;
 
-    private String confirmationCode;
+    private Object tags;
 
 }

@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -148,6 +145,7 @@ public class UserServiceImpl implements UserService {
             String encodedPassword = passwordEncoder.encode(createUser.getPassword());
             user.setPassword(encodedPassword);
 
+            user.setNamaLengkap(createUser.getNama_lengkap());
             user.setUsername(createUser.getUsername());
             user.setEmail(createUser.getEmail());
             user.setNoHp(createUser.getNo_hp());
@@ -157,6 +155,8 @@ public class UserServiceImpl implements UserService {
             user.setJenisKelamin(createUser.getJenis_kelamin());
             user.setPin(createUser.getPin());
             user.setActive(createUser.isActive());
+            user.setStatus("Pending");
+            user.setAccepted(false);
             user.setConfirmationCode(createUser.getConfirmationCode());
 
             Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
@@ -212,7 +212,7 @@ public class UserServiceImpl implements UserService {
                 if (confirmCode.equals(sentCode) || existUser.isActive()) {
 
                     existUser.setActive(true);
-                    existUser.setConfirmationCode(null);
+                    existUser.setConfirmationCode("null");
 
                     userRepository.save(existUser);
 
@@ -372,5 +372,58 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    public ResponseEntity<?> checkRegistration(CheckRegisDto checkRegisDto) {
+        try {
+
+            //Lookup user in database by email and username
+            User existEmail = findByEmail(checkRegisDto.getEmail());
+            Optional<User> existUsername = findByUsername(checkRegisDto.getUsername());
+            User existNohp = userRepository.findBynoHp(checkRegisDto.getNo_hp());
+
+            //Check email
+            if (existEmail != null) {
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                null,
+                                "Alamat email telah terdaftar"),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            //Check username
+            if (existUsername.isPresent()) {
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                null,
+                                "Username  telah terdaftar"),
+                        HttpStatus.BAD_REQUEST);
+            }
+            //Check handpone
+            if (existNohp != null) {
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                null,
+                                "Nomor handphone telah tetdaftar"),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            //Check Rekening
+            //Pending
+
+            return new ResponseEntity(new BaseResponse
+                    (HttpStatus.OK,
+                            null,
+                            "Data OK, proses registrasi bisa dilanjutkan"),
+                    HttpStatus.OK);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity(new BaseResponse
+                    (HttpStatus.BAD_GATEWAY,
+                            null,
+                            "Server error"),
+                    HttpStatus.BAD_GATEWAY);
+        }
+    }
 
 }

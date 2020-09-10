@@ -27,6 +27,9 @@ public class User extends AuditModel {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @Column(name = "nama_lengkap", nullable = false, unique = true)
+    private String namaLengkap;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -58,8 +61,15 @@ public class User extends AuditModel {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "status")
+    private String status;
+
+
     @Column(name = "is_active")
     private boolean isActive;
+
+    @Column(name = "is_accepted")
+    private boolean isAccepted;
 
     @Column(name = "confirmation_code")
     private String confirmationCode;

@@ -1,9 +1,6 @@
 package com.travada.backend.module.user.controller;
 
-import com.travada.backend.module.user.dto.ConfirmationDto;
-import com.travada.backend.module.user.dto.CreateUserDto;
-import com.travada.backend.module.user.dto.LoginDto;
-import com.travada.backend.module.user.dto.ResendCodeDto;
+import com.travada.backend.module.user.dto.*;
 import com.travada.backend.module.user.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +23,12 @@ public class UserController {
 
         return userService.createNewUser(createUser, foto_ktp, selfie_ktp);
 
+    }
+
+    @PostMapping("/register/check")
+    public ResponseEntity<?> checkRegistration(@RequestBody CheckRegisDto checkRegisDto) {
+
+        return userService.checkRegistration(checkRegisDto);
     }
 
     //Confirm New User
