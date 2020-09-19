@@ -1,8 +1,6 @@
 package com.travada.backend.module.trip.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.travada.backend.utils.AuditModel;
-import com.travada.backend.utils.LocalDateDeserializer;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -46,9 +44,12 @@ public class Destinasi extends AuditModel {
     private LocalDate berangkat;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate pulang;
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "rencana_trip", joinColumns = @JoinColumn(name = "id_trip"))
-    private List<RencanaPerjalanan> rencana_list;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "hari", joinColumns = @JoinColumn(name = "id_trip"))
+    private List<String> hari;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "rencana_list", joinColumns = @JoinColumn(name = "id_trip"))
+    private List<String> rencana_list;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "fasilitas_trip", joinColumns = @JoinColumn(name = "id_trip"))
     private Set<String> fasilitas;
