@@ -1,5 +1,7 @@
 package com.travada.backend.module.booking.controller;
 
+import com.travada.backend.config.security.CurrentUser;
+import com.travada.backend.config.security.UserPrincipal;
 import com.travada.backend.module.booking.model.Cicilan;
 import com.travada.backend.module.booking.model.DTO.CreatePemesananDTO;
 import com.travada.backend.module.booking.model.DTO.DetailPemesananDTO;
@@ -40,12 +42,12 @@ public class PemesananController {
         return pemesananService.findAll();
     }
 
-    @GetMapping("/{idUser}/destinasi/{idDestinasi}")
-    public BaseResponse getById(@PathVariable Long idUser, @PathVariable Long idDestinasi) {
+    @GetMapping("/destinasi/{idDestinasi}")
+    public BaseResponse getById(@CurrentUser UserPrincipal userPrincipal, @PathVariable Long idDestinasi) {
         BaseResponse baseResponse = new BaseResponse();
         DetailPemesananDTO detailPemesananDTO = new DetailPemesananDTO();
 
-        Pemesanan pemesanan = pemesananService.findByDestinasiIdAndUserId(idDestinasi, idUser);
+        Pemesanan pemesanan = pemesananService.findByDestinasiIdAndUserId(idDestinasi, userPrincipal.getId());
         List<Pemesan> pemesanList = pemesanService.getPemesan(pemesanan.getId());
         List<Cicilan> cicilanList = cicilanService.getCicilan(pemesanan.getId());
 
@@ -55,18 +57,18 @@ public class PemesananController {
 
         baseResponse.setStatus(HttpStatus.OK);
         baseResponse.setData(detailPemesananDTO);
-        baseResponse.setMessage("pengambilan detail pemesanan dengan id user " + idUser + " dan id destinasi " + idDestinasi + " berhasil dilakukan");
+        baseResponse.setMessage("pengambilan detail pemesanan dengan id user " + userPrincipal.getId() + " dan id destinasi " + idDestinasi + " berhasil dilakukan");
         return baseResponse;
     }
 
-    @GetMapping("/{idUser}")
-    public BaseResponse getAllByIdUser(@PathVariable Long idUser) {
-        return pemesananService.findByIdUser(idUser);
+    @GetMapping()
+    public BaseResponse getAllByIdUser(@CurrentUser UserPrincipal user) {
+        return pemesananService.findByIdUser(user.getId());
     }
 
 
-    @PostMapping("/{idUser}")
-    public BaseResponse createPemesanan(@ModelAttribute CreatePemesananDTO pemesananDTO, @PathVariable Long idUser, @RequestParam MultipartFile[] ktp, @RequestParam MultipartFile[] paspor) {
+    @PostMapping()
+    public BaseResponse createPemesanan(@ModelAttribute CreatePemesananDTO pemesananDTO, @CurrentUser UserPrincipal user, @RequestParam MultipartFile[] ktp, @RequestParam MultipartFile[] paspor) {
         BaseResponse baseResponse = new BaseResponse();
         DetailPemesananDTO detailPemesananDTO = new DetailPemesananDTO();
         Pemesanan pemesanan = new Pemesanan();
@@ -75,7 +77,7 @@ public class PemesananController {
 
         pemesanan.setOrang(pemesananDTO.getOrang());
         pemesanan.setStatus("menunggu");
-        pemesanan = pemesananService.savePemesanan(idUser, pemesananDTO.getIdDestinasi(), pemesanan);
+        pemesanan = pemesananService.savePemesanan(user.getId(), pemesananDTO.getIdDestinasi(), pemesanan);
 
         for (int i = 0; i < pemesananDTO.getOrang(); i++) {
             Pemesan pemesanData = new Pemesan();
