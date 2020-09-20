@@ -200,8 +200,8 @@ public class DestinasiServiceImpl implements DestinasiService {
         if (newDestinasi.getInfo_persiapan() != null) {
             destinasi.setInfo_persiapan(newDestinasi.getInfo_persiapan());
         }
-        if (newDestinasi.getInfo_kesehatan_keamanan() != null) {
-            destinasi.setInfo_kesehatan_keamanan(newDestinasi.getInfo_kesehatan_keamanan());
+        if (newDestinasi.getSyarat_ketentuan() != null) {
+            destinasi.setSyarat_ketentuan(newDestinasi.getSyarat_ketentuan());
         }
         if (newDestinasi.getKapasitas_terisi() != 0) {
             destinasi.setKapasitas_terisi(newDestinasi.getKapasitas_terisi());

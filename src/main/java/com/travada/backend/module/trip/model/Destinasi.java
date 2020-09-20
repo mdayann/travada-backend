@@ -44,9 +44,9 @@ public class Destinasi extends AuditModel {
     private LocalDate berangkat;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate pulang;
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "hari", joinColumns = @JoinColumn(name = "id_trip"))
-    private List<String> hari;
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    @CollectionTable(name = "hari", joinColumns = @JoinColumn(name = "id_trip"))
+//    private List<String> hari;
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "rencana_list", joinColumns = @JoinColumn(name = "id_trip"))
     private List<String> rencana_list;
@@ -55,7 +55,7 @@ public class Destinasi extends AuditModel {
     private Set<String> fasilitas;
     private String info_waktu_cuaca;
     private String info_persiapan;
-    private String info_kesehatan_keamanan;
+    private String syarat_ketentuan;
     @Setter(AccessLevel.NONE)
     private int durasi;
     @Setter(AccessLevel.NONE)

@@ -50,6 +50,8 @@ public class PemesananServiceImpl implements PemesananService{
         userRepository.findById(idUser).map(user -> {
             pemesanan.setUser(user);
             destinasiRepository.findById(idDestinasi).map(destinasi -> {
+                destinasi.setKapasitas_terisi(pemesanan.getOrang());
+                destinasiRepository.save(destinasi);
                 pemesanan.setTotal(destinasi.getHarga_satuan()*pemesanan.getOrang());
                 pemesanan.setDestinasi(destinasi);
                 return pemesananRepository.save(pemesanan);
@@ -138,7 +140,6 @@ public class PemesananServiceImpl implements PemesananService{
         pemesanan.setStatus(status);
         return pemesananRepository.save(pemesanan);
     }
-
 
     @Override
     public ResponseEntity<?> dropById(Long id) {

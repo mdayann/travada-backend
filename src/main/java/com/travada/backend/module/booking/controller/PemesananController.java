@@ -110,7 +110,7 @@ public class PemesananController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePemesanan(@PathVariable Long id, @PathVariable String idUser, @PathVariable String idDestinasi) {
+    public ResponseEntity<?> deletePemesanan(@PathVariable Long id) {
         return pemesananService.dropById(id);
     }
 }
