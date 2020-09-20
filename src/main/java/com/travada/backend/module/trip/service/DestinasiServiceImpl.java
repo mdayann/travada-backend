@@ -44,7 +44,7 @@ public class DestinasiServiceImpl implements DestinasiService {
         }
         destinasi.setGambar_list(gambar);
         destinasi.setPopularitas();
-        destinasi.setDurasi(destinasi.getBerangkat(),destinasi.getPulang());
+        destinasi.setDurasi(destinasi.getBerangkat(), destinasi.getPulang());
         destinasiRepository.save(destinasi);
 
         baseResponse.setStatus(HttpStatus.CREATED);
@@ -88,9 +88,13 @@ public class DestinasiServiceImpl implements DestinasiService {
     }
 
     @Transactional
-    public BaseResponse findAllFilterHarga(Long termurah, Long termahal, String benua) {
+    public BaseResponse findAllFilterHarga(Long termurah, Long termahal, String[] benuaList) {
         BaseResponse baseResponse = new BaseResponse();
-        List<Destinasi> destinasiList = destinasiRepository.findAllByFilterHarga_Satuan( benua, termurah, termahal);
+        List<Destinasi> destinasiList = new ArrayList<>();
+        for (String benua : benuaList) {
+            destinasiList.addAll(destinasiRepository.findAllByFilterHarga_Satuan(benua, termurah, termahal));
+        }
+
 
         if (destinasiList == null) {
             baseResponse.setStatus(HttpStatus.NO_CONTENT);
@@ -182,7 +186,7 @@ public class DestinasiServiceImpl implements DestinasiService {
         if (newDestinasi.getBerangkat() != null && newDestinasi.getPulang() != null) {
             destinasi.setBerangkat(newDestinasi.getBerangkat());
             destinasi.setPulang(newDestinasi.getPulang());
-            destinasi.setDurasi(newDestinasi.getBerangkat(),newDestinasi.getPulang());
+            destinasi.setDurasi(newDestinasi.getBerangkat(), newDestinasi.getPulang());
 
         }
         if (newDestinasi.getRencana_list() != null) {

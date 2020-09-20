@@ -16,7 +16,7 @@ public interface DestinasiService {
 
     BaseResponse findAllSortByPilihan();
 
-    BaseResponse findAllFilterHarga(Long termurah, Long termahal, String benua);
+    BaseResponse findAllFilterHarga(Long termurah, Long termahal, String[] benua);
 
     BaseResponse findAllBySearch(String keyword);
 

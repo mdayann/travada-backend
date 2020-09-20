@@ -30,7 +30,7 @@ public class DestinasiController {
     }
 
     @GetMapping("/hargabenua")
-    public BaseResponse getRangeHarga(@RequestParam Long termurah, @RequestParam Long termahal, @RequestParam String benua) {
+    public BaseResponse getRangeHarga(@RequestParam Long termurah, @RequestParam Long termahal, @RequestParam String[] benua) {
         return destinasiService.findAllFilterHarga(termurah, termahal, benua);
     }
 
