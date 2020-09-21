@@ -10,6 +10,7 @@ import com.travada.backend.module.user.model.RoleName;
 import com.travada.backend.module.user.model.User;
 import com.travada.backend.module.user.repository.RoleRepository;
 import com.travada.backend.module.user.repository.UserRepository;
+import com.travada.backend.module.user.service.email.EmailService;
 import com.travada.backend.utils.BaseResponse;
 import com.travada.backend.utils.ModelMapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -148,6 +146,7 @@ public class UserServiceImpl implements UserService {
             String encodedPassword = passwordEncoder.encode(createUser.getPassword());
             user.setPassword(encodedPassword);
 
+            user.setNamaLengkap(createUser.getNama_lengkap());
             user.setUsername(createUser.getUsername());
             user.setEmail(createUser.getEmail());
             user.setNoHp(createUser.getNo_hp());
@@ -157,6 +156,8 @@ public class UserServiceImpl implements UserService {
             user.setJenisKelamin(createUser.getJenis_kelamin());
             user.setPin(createUser.getPin());
             user.setActive(createUser.isActive());
+            user.setStatus("Pending");
+            user.setAccepted(false);
             user.setConfirmationCode(createUser.getConfirmationCode());
 
             Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
@@ -206,20 +207,56 @@ public class UserServiceImpl implements UserService {
 
             String confirmCode = confirmUser.getConfirmationCode();
             String sentCode = existUser.getConfirmationCode();
+            String rawPassword = confirmUser.getPassword();
+            String encodedPassword = existUser.getPassword();
+            boolean isPasswordMatch = passwordEncoder.matches(rawPassword, encodedPassword);
+
             System.out.println(confirmCode == sentCode);
 
             try {
                 if (confirmCode.equals(sentCode) || existUser.isActive()) {
 
                     existUser.setActive(true);
-                    existUser.setConfirmationCode(null);
+                    existUser.setConfirmationCode("null");
 
                     userRepository.save(existUser);
 
+                    if (!isPasswordMatch) {
+                        return new ResponseEntity(new BaseResponse
+                                (HttpStatus.BAD_REQUEST,
+                                        null,
+                                        "Username atau password salah"),
+                                HttpStatus.BAD_REQUEST);
+                    }
+
+                    //Check if user active
+
+                    boolean isActive = existUser.isActive();
+
+                    if (!isActive) {
+                        return new ResponseEntity(new BaseResponse
+                                (HttpStatus.BAD_REQUEST,
+                                        null,
+                                        "Akun anda belum aktif"),
+                                HttpStatus.BAD_REQUEST);
+                    }
+
+                    Authentication authentication = authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    confirmUser.getUsername(),
+                                    confirmUser.getPassword()
+                            )
+                    );
+
+                    String pin = existUser.getPin();
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    String jwt = tokenProvider.generateToken(authentication);
                     return new ResponseEntity(new BaseResponse
                             (HttpStatus.OK,
-                                    null,
-                                    "Akun anda sudah aktif, silahkan login"),
+                                    new JwtAuthenticationResponse(jwt, pin),
+                                    "Login berhasil"),
                             HttpStatus.OK);
                 } else {
                     return new ResponseEntity(new BaseResponse
@@ -352,12 +389,14 @@ public class UserServiceImpl implements UserService {
                     )
             );
 
+            String pin = existUser.get().getPin();
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             String jwt = tokenProvider.generateToken(authentication);
             return new ResponseEntity(new BaseResponse
                     (HttpStatus.OK,
-                            new JwtAuthenticationResponse(jwt),
+                            new JwtAuthenticationResponse(jwt, pin),
                             "Login berhasil"),
                     HttpStatus.OK);
 
@@ -372,5 +411,60 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    public ResponseEntity<?> checkRegistration(CheckRegisDto checkRegisDto) {
+        try {
+
+            //Lookup user in database by email and username
+            User existEmail = findByEmail(checkRegisDto.getEmail());
+            Optional<User> existUsername = findByUsername(checkRegisDto.getUsername());
+            User existNohp = userRepository.findBynoHp(checkRegisDto.getNo_hp());
+
+            DataCheckRegisDto dataCheckRegisDto = new DataCheckRegisDto();
+            dataCheckRegisDto.setMsg1(null);
+            dataCheckRegisDto.setMsg2(null);
+            dataCheckRegisDto.setMsg3(null);
+            dataCheckRegisDto.setMsg4(null);
+
+            if ((existEmail != null) || (existUsername.isPresent()) || (existNohp != null) ) {
+                //Check email
+                if (existEmail != null) {
+                    dataCheckRegisDto.setMsg2("Alamat email telah terdaftar");
+                }
+
+                //Check username
+                if (existUsername.isPresent()) {
+                    dataCheckRegisDto.setMsg1("Username  telah terdaftar");
+                }
+                //Check handpone
+                if (existNohp != null) {
+                    dataCheckRegisDto.setMsg3("Nomor handphone telah tetdaftar");
+                }
+
+                return new ResponseEntity(new BaseResponse
+                        (HttpStatus.BAD_REQUEST,
+                                dataCheckRegisDto,
+                                "Error"),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            //Check Rekening
+            //Pending
+
+            return new ResponseEntity(new BaseResponse
+                    (HttpStatus.OK,
+                            null,
+                            "Succes"),
+                    HttpStatus.OK);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity(new BaseResponse
+                    (HttpStatus.BAD_GATEWAY,
+                            null,
+                            "Server error"),
+                    HttpStatus.BAD_GATEWAY);
+        }
+    }
 
 }
