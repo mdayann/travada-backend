@@ -56,7 +56,7 @@ public class User extends AuditModel {
     private String jenisKelamin;
 
     @Column(name = "pin")
-    private Long pin;
+    private String pin;
 
     @Column(name = "password")
     private String password;

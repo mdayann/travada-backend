@@ -34,7 +34,7 @@ public class CreateUserDto {
 
     private String jenis_kelamin;
 
-    private Long pin;
+    private String pin;
 
     private String password;
 

@@ -248,7 +248,7 @@ public class UserServiceImpl implements UserService {
                             )
                     );
 
-                    Long pin = existUser.getPin();
+                    String pin = existUser.getPin();
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -389,7 +389,7 @@ public class UserServiceImpl implements UserService {
                     )
             );
 
-            Long pin = existUser.get().getPin();
+            String pin = existUser.get().getPin();
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
