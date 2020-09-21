@@ -1,4 +1,4 @@
-package com.travada.backend.module.user.dto;
+package com.travada.backend.module.nasabah.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -26,13 +26,13 @@ public class ListUserDto {
 
     private String no_hp;
 
-    private Long no_rekening;
+    private String no_rekening;
 
     private String fotoKtp;
 
     private String selfieKtp;
 
-    private Long no_ktp;
+    private String no_ktp;
 
     private Date tgl_lahir;
 

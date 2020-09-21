@@ -25,9 +25,9 @@ public class CreateUserDto {
 
     private String no_hp;
 
-    private Long no_rekening;
+    private String no_rekening;
 
-    private Long no_ktp;
+    private String no_ktp;
 
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     private Date tgl_lahir;

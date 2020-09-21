@@ -37,7 +37,7 @@ public class User extends AuditModel {
     private String noHp;
 
     @Column(name = "no_rekening")
-    private Long noRekening;
+    private String noRekening;
 
     @Column(name = "foto_ktp")
     private String fotoKtp;
@@ -46,7 +46,7 @@ public class User extends AuditModel {
     private String selfieKtp;
 
     @Column(name = "no_ktp")
-    private Long noKtp;
+    private String noKtp;
 
     @Column(name = "tgl_lahir")
     @DateTimeFormat(pattern = "dd-MM-yyyy")

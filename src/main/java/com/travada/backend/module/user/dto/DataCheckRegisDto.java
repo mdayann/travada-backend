@@ -12,10 +12,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class ConfirmationDto {
-    private String username;
+public class DataCheckRegisDto {
 
-    private String confirmationCode;
+    private String msg1;
 
-    private String password;
+    private String msg2;
+
+    private String msg3;
+
+    private String msg4;
 }

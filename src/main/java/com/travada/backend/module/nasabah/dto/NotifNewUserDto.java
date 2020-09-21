@@ -1,4 +1,4 @@
-package com.travada.backend.module.user.dto;
+package com.travada.backend.module.nasabah.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -12,10 +12,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class ConfirmationDto {
-    private String username;
+public class NotifNewUserDto {
 
-    private String confirmationCode;
+    private Long id;
 
-    private String password;
+    private String avatar;
+
+    private String namaLengkap;
+
+    private String judul;
+
+    private String deskripsi;
 }

@@ -15,8 +15,10 @@ import lombok.Setter;
 public class JwtAuthenticationResponse {
     private String token;
     private String tokenType = "Bearer";
+    private Long pin;
 
-    public JwtAuthenticationResponse(String token) {
+    public JwtAuthenticationResponse(String token,Long pin) {
         this.token = token;
+        this.pin = pin;
     }
 }

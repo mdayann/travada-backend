@@ -10,6 +10,7 @@ import com.travada.backend.module.user.model.RoleName;
 import com.travada.backend.module.user.model.User;
 import com.travada.backend.module.user.repository.RoleRepository;
 import com.travada.backend.module.user.repository.UserRepository;
+import com.travada.backend.module.user.service.email.EmailService;
 import com.travada.backend.utils.BaseResponse;
 import com.travada.backend.utils.ModelMapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -206,6 +207,10 @@ public class UserServiceImpl implements UserService {
 
             String confirmCode = confirmUser.getConfirmationCode();
             String sentCode = existUser.getConfirmationCode();
+            String rawPassword = confirmUser.getPassword();
+            String encodedPassword = existUser.getPassword();
+            boolean isPasswordMatch = passwordEncoder.matches(rawPassword, encodedPassword);
+
             System.out.println(confirmCode == sentCode);
 
             try {
@@ -216,10 +221,42 @@ public class UserServiceImpl implements UserService {
 
                     userRepository.save(existUser);
 
+                    if (!isPasswordMatch) {
+                        return new ResponseEntity(new BaseResponse
+                                (HttpStatus.BAD_REQUEST,
+                                        null,
+                                        "Username atau password salah"),
+                                HttpStatus.BAD_REQUEST);
+                    }
+
+                    //Check if user active
+
+                    boolean isActive = existUser.isActive();
+
+                    if (!isActive) {
+                        return new ResponseEntity(new BaseResponse
+                                (HttpStatus.BAD_REQUEST,
+                                        null,
+                                        "Akun anda belum aktif"),
+                                HttpStatus.BAD_REQUEST);
+                    }
+
+                    Authentication authentication = authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    confirmUser.getUsername(),
+                                    confirmUser.getPassword()
+                            )
+                    );
+
+                    Long pin = existUser.getPin();
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    String jwt = tokenProvider.generateToken(authentication);
                     return new ResponseEntity(new BaseResponse
                             (HttpStatus.OK,
-                                    null,
-                                    "Akun anda sudah aktif, silahkan login"),
+                                    new JwtAuthenticationResponse(jwt, pin),
+                                    "Login berhasil"),
                             HttpStatus.OK);
                 } else {
                     return new ResponseEntity(new BaseResponse
@@ -352,12 +389,14 @@ public class UserServiceImpl implements UserService {
                     )
             );
 
+            Long pin = existUser.get().getPin();
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             String jwt = tokenProvider.generateToken(authentication);
             return new ResponseEntity(new BaseResponse
                     (HttpStatus.OK,
-                            new JwtAuthenticationResponse(jwt),
+                            new JwtAuthenticationResponse(jwt, pin),
                             "Login berhasil"),
                     HttpStatus.OK);
 
@@ -381,29 +420,31 @@ public class UserServiceImpl implements UserService {
             Optional<User> existUsername = findByUsername(checkRegisDto.getUsername());
             User existNohp = userRepository.findBynoHp(checkRegisDto.getNo_hp());
 
-            //Check email
-            if (existEmail != null) {
-                return new ResponseEntity(new BaseResponse
-                        (HttpStatus.BAD_REQUEST,
-                                null,
-                                "Alamat email telah terdaftar"),
-                        HttpStatus.BAD_REQUEST);
-            }
+            DataCheckRegisDto dataCheckRegisDto = new DataCheckRegisDto();
+            dataCheckRegisDto.setMsg1(null);
+            dataCheckRegisDto.setMsg2(null);
+            dataCheckRegisDto.setMsg3(null);
+            dataCheckRegisDto.setMsg4(null);
 
-            //Check username
-            if (existUsername.isPresent()) {
+            if ((existEmail != null) || (existUsername.isPresent()) || (existNohp != null) ) {
+                //Check email
+                if (existEmail != null) {
+                    dataCheckRegisDto.setMsg2("Alamat email telah terdaftar");
+                }
+
+                //Check username
+                if (existUsername.isPresent()) {
+                    dataCheckRegisDto.setMsg1("Username  telah terdaftar");
+                }
+                //Check handpone
+                if (existNohp != null) {
+                    dataCheckRegisDto.setMsg3("Nomor handphone telah tetdaftar");
+                }
+
                 return new ResponseEntity(new BaseResponse
                         (HttpStatus.BAD_REQUEST,
-                                null,
-                                "Username  telah terdaftar"),
-                        HttpStatus.BAD_REQUEST);
-            }
-            //Check handpone
-            if (existNohp != null) {
-                return new ResponseEntity(new BaseResponse
-                        (HttpStatus.BAD_REQUEST,
-                                null,
-                                "Nomor handphone telah tetdaftar"),
+                                dataCheckRegisDto,
+                                "Error"),
                         HttpStatus.BAD_REQUEST);
             }
 
@@ -413,7 +454,7 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity(new BaseResponse
                     (HttpStatus.OK,
                             null,
-                            "Data OK, proses registrasi bisa dilanjutkan"),
+                            "Succes"),
                     HttpStatus.OK);
 
         } catch (Exception e) {

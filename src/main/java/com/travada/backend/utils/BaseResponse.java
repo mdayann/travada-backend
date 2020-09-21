@@ -1,6 +1,5 @@
 package com.travada.backend.utils;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,9 +8,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Setter @Getter
-@AllArgsConstructor @NoArgsConstructor
+@NoArgsConstructor
 public class BaseResponse {
     private HttpStatus status;
-    private Object data;
     private String message;
+    private Object data;
+
+    public BaseResponse(HttpStatus status, Object data, String message) {
+        this.status = status;
+        this.data = data;
+        this.message = message;
+    }
 }

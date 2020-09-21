@@ -20,5 +20,5 @@ public class CheckRegisDto {
 
     private String no_hp;
 
-    private Long no_rekening;
+    private String no_rekening;
 }
