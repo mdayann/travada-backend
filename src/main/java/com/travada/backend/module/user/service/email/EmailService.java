@@ -1,4 +1,4 @@
-package com.travada.backend.module.user.service;
+package com.travada.backend.module.user.service.email;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

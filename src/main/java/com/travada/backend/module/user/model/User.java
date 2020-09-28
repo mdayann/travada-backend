@@ -27,6 +27,9 @@ public class User extends AuditModel {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @Column(name = "nama_lengkap", nullable = false, unique = true)
+    private String namaLengkap;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -34,7 +37,7 @@ public class User extends AuditModel {
     private String noHp;
 
     @Column(name = "no_rekening")
-    private Long noRekening;
+    private String noRekening;
 
     @Column(name = "foto_ktp")
     private String fotoKtp;
@@ -43,7 +46,7 @@ public class User extends AuditModel {
     private String selfieKtp;
 
     @Column(name = "no_ktp")
-    private Long noKtp;
+    private String noKtp;
 
     @Column(name = "tgl_lahir")
     @DateTimeFormat(pattern = "dd-MM-yyyy")
@@ -53,13 +56,20 @@ public class User extends AuditModel {
     private String jenisKelamin;
 
     @Column(name = "pin")
-    private Long pin;
+    private String pin;
 
     @Column(name = "password")
     private String password;
 
+    @Column(name = "status")
+    private String status;
+
+
     @Column(name = "is_active")
     private boolean isActive;
+
+    @Column(name = "is_accepted")
+    private boolean isAccepted;
 
     @Column(name = "confirmation_code")
     private String confirmationCode;
