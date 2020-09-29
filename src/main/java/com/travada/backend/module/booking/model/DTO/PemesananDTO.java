@@ -9,5 +9,6 @@ public class PemesananDTO {
     private String nama_user;
     private Long id_destinasi;
     private String judul_trip;
+    private Long id_pemesanan;
     private Pemesanan pemesanan;
 }

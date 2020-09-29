@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,35 @@ public class PemesanServiceImpl implements PemesanService {
 
 
     @Override
+    public Pemesan createPemesanBase64(Long idPemesanan, Pemesan pemesan, String ktp, String paspor) {
+
+
+        byte[] ktpBytes = Base64.getMimeDecoder().decode(ktp);
+        byte[] pasporBytes = Base64.getMimeDecoder().decode(paspor);
+
+        Map uploadResult = cloudinary.upload(ktpBytes,
+                ObjectUtils.asMap("resourcetype", "auto"));
+
+        pemesan.setKtp(uploadResult.get("url").toString());
+
+        Map uploadResult2 = cloudinary.upload(pasporBytes,
+                ObjectUtils.asMap("resourcetype", "auto"));
+
+        pemesan.setPaspor(uploadResult2.get("url").toString());
+
+
+        pemesananRepository.findById(idPemesanan).map(pemesanan -> {
+            pemesan.setPemesanan(pemesanan);
+            return pemesanRepository.save(pemesan);
+        }).orElseThrow(() -> new DataNotFoundException(idPemesanan));
+
+        return pemesan;
+    }
+
+    @Override
     public Pemesan createPemesan(Long idPemesanan, Pemesan pemesan, MultipartFile ktp, MultipartFile paspor) {
+
+
         try {
             Map uploadResult = cloudinary.upload(ktp.getBytes(),
                     ObjectUtils.asMap("resourcetype", "auto"));
