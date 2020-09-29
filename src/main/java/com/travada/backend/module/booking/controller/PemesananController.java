@@ -147,7 +147,7 @@ public class PemesananController {
     }
 
     @PostMapping("/base64")
-    public BaseResponse createPemesananBase64(@ModelAttribute CreatePemesananDTO pemesananDTO, @CurrentUser UserPrincipal user) {
+    public BaseResponse createPemesananBase64(@RequestBody CreatePemesananDTO pemesananDTO, @CurrentUser UserPrincipal user) {
         BaseResponse baseResponse = new BaseResponse();
         DetailPemesananDTO detailPemesananDTO = new DetailPemesananDTO();
         Pemesanan pemesanan = new Pemesanan();
@@ -215,7 +215,7 @@ public class PemesananController {
     }
 
     @PostMapping("/base64/{idUser}")
-    public BaseResponse createPemesananBase64(@ModelAttribute CreatePemesananDTO pemesananDTO, @PathVariable Long idUser) {
+    public BaseResponse createPemesananBase64(@RequestBody CreatePemesananDTO pemesananDTO, @PathVariable Long idUser) {
         BaseResponse baseResponse = new BaseResponse();
         DetailPemesananDTO detailPemesananDTO = new DetailPemesananDTO();
         Pemesanan pemesanan = new Pemesanan();
