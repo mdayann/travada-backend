@@ -77,6 +77,7 @@ public class PemesananServiceImpl implements PemesananService{
             pemesananDTO.setId_user(pemesanan.getUser().getId());
             pemesananDTO.setNama_user(pemesanan.getUser().getUsername());
             pemesananDTO.setJudul_trip(pemesanan.getDestinasi().getNama_trip());
+            pemesananDTO.setId_pemesanan(pemesanan.getId());
             pemesananDTOS.add(pemesananDTO);
         }
         baseResponse.setStatus(HttpStatus.OK);
@@ -100,6 +101,7 @@ public class PemesananServiceImpl implements PemesananService{
             pemesananDTO.setId_user(pemesanan.getUser().getId());
             pemesananDTO.setNama_user(pemesanan.getUser().getUsername());
             pemesananDTO.setJudul_trip(pemesanan.getDestinasi().getNama_trip());
+            pemesananDTO.setId_pemesanan(pemesanan.getId());
             pemesananDTOS.add(pemesananDTO);
         }
         baseResponse.setStatus(HttpStatus.OK);
@@ -121,16 +123,11 @@ public class PemesananServiceImpl implements PemesananService{
 
     @Override
     public Pemesanan findById(Long id) {
-        BaseResponse baseResponse = new BaseResponse();
-        DetailPemesananDTO detailPemesananDTO = new DetailPemesananDTO();
 
         Pemesanan pemesanan = pemesananRepository.findById(id)
                 .orElseThrow(()->new DataNotFoundException(id));
 
-        baseResponse.setStatus(HttpStatus.OK);
-        baseResponse.setData(pemesanan);
-        baseResponse.setMessage("pengambilan data pemesanan dengan id "+id+" berhasil dilakukan");
-        return pemesanan;
+       return pemesanan;
     }
 
     @Override
