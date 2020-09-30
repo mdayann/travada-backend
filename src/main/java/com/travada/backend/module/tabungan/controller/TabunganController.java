@@ -1,7 +1,7 @@
 package com.travada.backend.module.tabungan.controller;
 
-import com.travada.backend.module.tabungan.model.Save;
-import com.travada.backend.module.tabungan.service.SaveService;
+import com.travada.backend.module.tabungan.model.Tabungan;
+import com.travada.backend.module.tabungan.service.TabunganService;
 import com.travada.backend.utils.BaseResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,28 +10,28 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/save")
-public class SaveController {
+public class TabunganController {
     @Autowired
-    private SaveService saveService;
+    private TabunganService tabunganService;
 
     @PostMapping()
-    public BaseResponse createSave(@ModelAttribute Save save,
+    public BaseResponse createSave(@ModelAttribute Tabungan tabungan,
                                    @RequestParam MultipartFile[] foto){
-        return saveService.saveSave(save, foto);
+        return tabunganService.saveSave(tabungan, foto);
     }
 
     @GetMapping("/all")
     public BaseResponse getAll() {
-        return saveService.findAll();
+        return tabunganService.findAll();
     }
 
     @GetMapping("/{id}")
     public BaseResponse getById(@PathVariable Long id) {
-        return saveService.findById(id);
+        return tabunganService.findById(id);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> dropSave(@PathVariable Long id){
-        return saveService.dropSave(id);
+        return tabunganService.dropSave(id);
     }
 }

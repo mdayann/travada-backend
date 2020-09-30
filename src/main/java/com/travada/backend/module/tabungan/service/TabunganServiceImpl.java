@@ -3,11 +3,14 @@ package com.travada.backend.module.tabungan.service;
 import com.cloudinary.utils.ObjectUtils;
 import com.travada.backend.config.CloudinaryConfig;
 import com.travada.backend.exception.DataNotFoundException;
-import com.travada.backend.module.tabungan.model.Save;
-import com.travada.backend.module.tabungan.repository.SaveRepository;
-import com.travada.backend.module.trip.model.Destinasi;
+import com.travada.backend.module.tabungan.model.Tabungan;
+import com.travada.backend.module.tabungan.repository.PenabungRepository;
+import com.travada.backend.module.tabungan.repository.TabunganRepository;
+import com.travada.backend.module.user.repository.UserRepository;
 import com.travada.backend.utils.BaseResponse;
+import com.travada.backend.utils.ModelMapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,16 +22,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Service("saveServiceImpl")
-public abstract class SaveServiceImpl implements SaveService {
+@Service("tabunganServiceImpl")
+public class TabunganServiceImpl implements TabunganService {
     @Autowired
-    private SaveRepository saveRepository;
+    private TabunganRepository tabunganRepository;
+
+    @Qualifier("userRepository")
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PenabungRepository penabungRepository;
 
     @Autowired
     private CloudinaryConfig cloudinaryConfig;
 
+    @Autowired
+    private ModelMapperUtil modelMapperUtil;
+
     @Transactional
-    public BaseResponse saveSave(Save save, MultipartFile[] foto) {
+    public BaseResponse saveTabungan(Tabungan tabungan, MultipartFile[] foto) {
         BaseResponse baseResponse = new BaseResponse();
         List<String> gambar = new ArrayList<>();
         if (foto != null) {
@@ -42,20 +55,20 @@ public abstract class SaveServiceImpl implements SaveService {
                 }
             }
         }
-        save.setGambar_tabungan(gambar);
-        saveRepository.save(save);
+        tabungan.setGambar_tabungan(gambar);
+        tabunganRepository.save(tabungan);
         baseResponse.setStatus(HttpStatus.CREATED);
-        baseResponse.setData(save);
+        baseResponse.setData(tabungan);
         baseResponse.setMessage("New Trava Save Success");
 
         return baseResponse;
     }
 
     @Transactional
-    public BaseResponse editById(Long id, Save newSave, MultipartFile[]foto) {
+    public BaseResponse editById(Long id, Tabungan newTabungan, MultipartFile[]foto) {
         BaseResponse baseResponse = new BaseResponse();
 
-        Save save = saveRepository.findById(id)
+        Tabungan tabungan = tabunganRepository.findById(id)
                 .orElseThrow(() ->
                         new DataNotFoundException(id));
         if (foto != null) {
@@ -69,31 +82,31 @@ public abstract class SaveServiceImpl implements SaveService {
                     e.printStackTrace();
                 }
             }
-            save.setGambar_tabungan(gambar);
+            tabungan.setGambar_tabungan(gambar);
         }
-        if (newSave.getTujuan() != null) {
-            save.setTujuan(newSave.getTujuan());
+        if (newTabungan.getTujuan() != null) {
+            tabungan.setTujuan(newTabungan.getTujuan());
         }
-        if (newSave.getJumlah_tabungan() != null) {
-            save.setJumlah_tabungan(newSave.getJumlah_tabungan());
+        if (newTabungan.getJumlah_tabungan() != null) {
+            tabungan.setJumlah_tabungan(newTabungan.getJumlah_tabungan());
         }
-        if (newSave.getTarget() != null) {
-            save.setTarget(newSave.getTarget());
+        if (newTabungan.getTarget() != null) {
+            tabungan.setTarget(newTabungan.getTarget());
         }
 
-        saveRepository.save(save);
+        tabunganRepository.save(tabungan);
 
         baseResponse.setStatus(HttpStatus.CREATED);
-        baseResponse.setData(save);
-        baseResponse.setMessage("Data with id : " + save.getId() + "is updated");
+        baseResponse.setData(tabungan);
+        baseResponse.setMessage("Data with id : " + tabungan.getId() + "is updated");
         return baseResponse;
     }
 
     @Transactional
     public ResponseEntity<?> dropSave(Long id) {
-        return saveRepository.findById(id)
+        return tabunganRepository.findById(id)
                 .map(save -> {
-                    saveRepository.delete(save);
+                    tabunganRepository.delete(save);
                     return ResponseEntity.ok().build();
                 }).orElseThrow(() -> new DataNotFoundException(id));
     }
@@ -101,10 +114,10 @@ public abstract class SaveServiceImpl implements SaveService {
     @Transactional
     public BaseResponse findAll() {
         BaseResponse baseResponse = new BaseResponse();
-        List<Save> saveList = saveRepository.findAll();
+        List<Tabungan> tabunganList = tabunganRepository.findAll();
 
         baseResponse.setStatus(HttpStatus.OK);
-        baseResponse.setData(saveRepository);
+        baseResponse.setData(tabunganRepository);
         baseResponse.setMessage("Success");
         return baseResponse;
     }
@@ -112,28 +125,28 @@ public abstract class SaveServiceImpl implements SaveService {
     @Transactional
     public BaseResponse findById(Long id) {
         BaseResponse baseResponse = new BaseResponse();
-        Save save = saveRepository.findById(id)
+        Tabungan tabungan = tabunganRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException(id));
-        save.setId(id);
+        tabungan.setId(id);
         baseResponse.setStatus(HttpStatus.OK);
-        baseResponse.setData(save);
+        baseResponse.setData(tabungan);
         baseResponse.setMessage("Tabungan dengan " + id + " telah berhasil");
         return baseResponse;
     }
 
     @Transactional
-    public BaseResponse editById(Long id, Save newSave, MultipartFile[] foto) {
+    public BaseResponse editById(Long id, Tabungan newTabungan, MultipartFile[] foto) {
         BaseResponse baseResponse = new BaseResponse();
 
-        Save save = saveRepository.findById(id)
+        Tabungan tabungan = tabunganRepository.findById(id)
                 .orElseThrow(() ->
                         new DataNotFoundException(id)
                 );
-        if (newSave.getTujuan() != null) {
-            save.setTujuan(newSave.getTujuan());
+        if (newTabungan.getTujuan() != null) {
+            tabungan.setTujuan(newTabungan.getTujuan());
         }
-        if (newSave.getJumlah_tabungan() != null) {
-            save.setJumlah_tabungan(newSave.getJumlah_tabungan());
+        if (newTabungan.getJumlah_tabungan() != null) {
+            tabungan.setJumlah_tabungan(newTabungan.getJumlah_tabungan());
         }
         if (foto != null) {
             List<String> gambar = new ArrayList<>();
@@ -146,28 +159,28 @@ public abstract class SaveServiceImpl implements SaveService {
                     e.printStackTrace();
                 }
             }
-            save.setGambar_tabungan(gambar);
+            tabungan.setGambar_tabungan(gambar);
         }
-        if (newSave.getSetoran_awal() != null) {
-            save.setSetoran_awal(newSave.getSetoran_awal());
-
-        }
-        if (newSave.getPeriode() != null) {
-            save.setPeriode(newSave.getPeriode());
+        if (newTabungan.getSetoran_awal() != null) {
+            tabungan.setSetoran_awal(newTabungan.getSetoran_awal());
 
         }
-        save.setJumlah_orang(newSave.getJumlah_orang());
+        if (newTabungan.getPeriode() != null) {
+            tabungan.setPeriode(newTabungan.getPeriode());
 
-        if (newSave.getTarget() != null ) {
-            save.setTarget(newSave.getTarget());
+        }
+        tabungan.setJumlah_orang(newTabungan.getJumlah_orang());
+
+        if (newTabungan.getTarget() != null ) {
+            tabungan.setTarget(newTabungan.getTarget());
         }
 
 
-        saveRepository.save(save);
+        tabunganRepository.save(tabungan);
 
         baseResponse.setStatus(HttpStatus.CREATED);
-        baseResponse.setData(save);
-        baseResponse.setMessage("Data dengan id " + save.getId() + " telah diupdate");
+        baseResponse.setData(tabungan);
+        baseResponse.setMessage("Data dengan id " + tabungan.getId() + " telah diupdate");
         return baseResponse;
     }
 }

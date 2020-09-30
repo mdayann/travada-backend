@@ -1,19 +1,13 @@
 package com.travada.backend.module.tabungan.service;
 
-import com.cloudinary.utils.ObjectUtils;
-import com.travada.backend.config.CloudinaryConfig;
 import com.travada.backend.exception.DataNotFoundException;
-import com.travada.backend.module.booking.model.Pemesan;
 import com.travada.backend.module.tabungan.model.Penabung;
 import com.travada.backend.module.tabungan.repository.PenabungRepository;
-import com.travada.backend.module.tabungan.repository.SaveRepository;
+import com.travada.backend.module.tabungan.repository.TabunganRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Service("penabungServiceImpl")
 public class PenabungServiceImpl implements PenabungService{
@@ -22,25 +16,32 @@ public class PenabungServiceImpl implements PenabungService{
     PenabungRepository penabungRepository;
 
     @Autowired
-    SaveService saveService;
+    TabunganService tabunganService;
 
     @Autowired
-    SaveRepository saveRepository;
+    TabunganRepository tabunganRepository;
 
     @Override
-    Penabung createPenabung(Long idSave, Penabung penabung) {
-        saveRepository.findById(idSave).map(save -> {
-            penabung.setSave(save);
+    public Penabung createPenabung(Long idTabungan, Penabung penabung) {
+        tabunganRepository.findById(idTabungan).map(tabungan -> {
+            penabung.setTabungan(tabungan);
             return penabungRepository.save(penabung);
-        }).orElseThrow(() -> new DataNotFoundException(idSave));
+        }).orElseThrow(() -> new DataNotFoundException(idTabungan));
 
         return penabung;
     }
 
+    @Override
+    public Penabung updatePenabung(Long id, Penabung penabungPayload) {
+        Penabung penabung = penabungRepository.findById(id)
+                .orElseThrow(()-> new DataNotFoundException(id));
+        penabungRepository.save(penabung);
+        return penabung;
+    }
 
     @Override
-    public List<Penabung> getPenabung(Long idPenabung) {
-        return null;
+    public List<Penabung> getPenabung(Long idTabungan) {
+        return penabungRepository.findAllByTabunganId(idTabungan);
     }
 
 

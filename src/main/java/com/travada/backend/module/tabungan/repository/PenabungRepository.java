@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface PenabungRepository extends JpaRepository<Penabung, Long> {
     Optional<Penabung> findById(Long id);
-    List<Penabung> findAllBySaveId(Long saveId);
+
+    List<Penabung> findAllByTabunganId(Long tabunganId);
 }

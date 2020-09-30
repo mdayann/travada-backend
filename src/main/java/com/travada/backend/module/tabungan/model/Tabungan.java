@@ -10,7 +10,7 @@ import java.util.Date;
 @Entity(name = "Save")
 @Table(name = "save")
 @Data
-public class Save extends AuditModel {
+public class Tabungan extends AuditModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

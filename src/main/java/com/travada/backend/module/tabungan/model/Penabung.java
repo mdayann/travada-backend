@@ -18,9 +18,14 @@ public class Penabung {
     @JoinColumn(name = "id_tabungan")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
-    private Save save;
+    private Tabungan tabungan;
 
 
+    public void setTabungan(Tabungan tabungan) {
+        this.tabungan = tabungan;
+    }
 
-
+    public Tabungan getTabungan() {
+        return tabungan;
+    }
 }
