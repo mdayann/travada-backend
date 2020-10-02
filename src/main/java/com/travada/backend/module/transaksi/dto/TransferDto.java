@@ -1,4 +1,4 @@
-package com.travada.backend.module.user.dto;
+package com.travada.backend.module.transaksi.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -12,22 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class GetMyAccountDto {
+public class TransferDto {
 
-    private Long id;
+    private Long amount;
 
-    private String namaLengkap;
-
-    private Long balance;
-
-    private String noRekening;
-
-    private String pin;
-
-    private String email;
-
-    private boolean isActive;
-
-    private boolean isAccepted;
+    private String destination;
 
 }
