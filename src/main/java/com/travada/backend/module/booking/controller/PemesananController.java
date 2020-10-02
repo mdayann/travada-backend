@@ -5,6 +5,7 @@ import com.travada.backend.config.security.UserPrincipal;
 import com.travada.backend.module.booking.model.Cicilan;
 import com.travada.backend.module.booking.model.DTO.CreatePemesananDTO;
 import com.travada.backend.module.booking.model.DTO.DetailPemesananDTO;
+import com.travada.backend.module.booking.model.DTO.StatusPemesanan;
 import com.travada.backend.module.booking.model.Pemesan;
 import com.travada.backend.module.booking.model.Pemesanan;
 import com.travada.backend.module.booking.service.CicilanService;
@@ -121,6 +122,24 @@ public class PemesananController {
         return pemesananService.findByIdUser(idUser);
     }
 
+    @GetMapping("/status/all")
+    public BaseResponse getAllByStatus(@RequestParam String[] status){
+        BaseResponse baseResponse = new BaseResponse();
+        if(status.length == 1) {
+            StatusPemesanan statusPemesanan = pemesananService.findByStatus(status[0]);
+            baseResponse.setData(statusPemesanan);
+        }else {
+            List<StatusPemesanan> statusPemesananList = new ArrayList<>();
+            for(String stat: status){
+                statusPemesananList.add(pemesananService.findByStatus(stat));
+            }
+            baseResponse.setData(statusPemesananList);
+        }
+        baseResponse.setStatus(HttpStatus.OK);
+        baseResponse.setMessage("List pemesanan dengan status "+status+" berhasil diambil");
+
+        return baseResponse;
+    }
 
     @PostMapping()
     public BaseResponse createPemesanan(@ModelAttribute CreatePemesananDTO pemesananDTO, @CurrentUser UserPrincipal user, @RequestParam MultipartFile[] foto_ktp, @RequestParam MultipartFile[] foto_paspor) {
