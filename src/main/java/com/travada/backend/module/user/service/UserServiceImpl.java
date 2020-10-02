@@ -7,6 +7,8 @@ import com.travada.backend.config.security.JwtTokenProvider;
 import com.travada.backend.config.security.UserPrincipal;
 import com.travada.backend.exception.AppException;
 import com.travada.backend.exception.ResourceNotFoundException;
+import com.travada.backend.module.transaksi.model.Saldo;
+import com.travada.backend.module.transaksi.repository.SaldoRepository;
 import com.travada.backend.module.user.dto.*;
 import com.travada.backend.module.user.model.Role;
 import com.travada.backend.module.user.model.RoleName;
@@ -68,6 +70,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     EncoderHelper encoderHelper;
+
+    @Autowired
+    SaldoRepository saldoRepository;
 
 
     @Autowired
@@ -491,9 +496,19 @@ public class UserServiceImpl implements UserService {
             System.out.println(currentUser.getNoRekening());
             System.out.println(currentUser.getPin());
 
-            String rawbalance = bankService.getBalance(currentUser.getNoRekening(), currentUser.getPin());
-            getMyAccountDto.setBalance(Long.parseLong(rawbalance));
+            Saldo saldo = saldoRepository.findByUserId(currentUser.getId());
+            System.out.println(saldo);
+            Long balance;
+            if(saldo == null) {
+                balance = 0L;
+            } else {
+                balance = saldo.getSaldo();
+            }
+
+//          String rawbalance = bankService.getBalance(currentUser.getNoRekening(), currentUser.getPin());
+            getMyAccountDto.setBalance(balance);
             getMyAccountDto.setNamaLengkap(currentUser.getNamaLengkap());
+            getMyAccountDto.setId(currentUser.getId());
             getMyAccountDto.setEmail(currentUser.getEmail());
             getMyAccountDto.setNoRekening(currentUser.getNoRekening());
             String encodedPin = encoderHelper.encryptBase64(currentUser.getPin());
