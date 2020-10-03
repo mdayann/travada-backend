@@ -3,6 +3,7 @@ package com.travada.backend.module.booking.service;
 import com.travada.backend.exception.DataNotFoundException;
 import com.travada.backend.module.booking.model.DTO.DetailPemesananDTO;
 import com.travada.backend.module.booking.model.DTO.PemesananDTO;
+import com.travada.backend.module.booking.model.DTO.StatusPemesanan;
 import com.travada.backend.module.booking.model.Pemesan;
 import com.travada.backend.module.booking.model.Pemesanan;
 import com.travada.backend.module.booking.repository.CicilanRepository;
@@ -76,6 +77,7 @@ public class PemesananServiceImpl implements PemesananService{
             pemesananDTO.setId_user(pemesanan.getUser().getId());
             pemesananDTO.setNama_user(pemesanan.getUser().getUsername());
             pemesananDTO.setJudul_trip(pemesanan.getDestinasi().getNama_trip());
+            pemesananDTO.setId_pemesanan(pemesanan.getId());
             pemesananDTOS.add(pemesananDTO);
         }
         baseResponse.setStatus(HttpStatus.OK);
@@ -99,12 +101,25 @@ public class PemesananServiceImpl implements PemesananService{
             pemesananDTO.setId_user(pemesanan.getUser().getId());
             pemesananDTO.setNama_user(pemesanan.getUser().getUsername());
             pemesananDTO.setJudul_trip(pemesanan.getDestinasi().getNama_trip());
+            pemesananDTO.setId_pemesanan(pemesanan.getId());
             pemesananDTOS.add(pemesananDTO);
         }
         baseResponse.setStatus(HttpStatus.OK);
         baseResponse.setData(pemesananDTOS);
         baseResponse.setMessage("pengambilan list data pemesanan trip dengan id user "+idUser+" telah berhasil");
         return baseResponse;
+    }
+
+    @Override
+    public StatusPemesanan findByStatus(String status) {
+        BaseResponse baseResponse = new BaseResponse();
+        StatusPemesanan statusPemesanan = new StatusPemesanan();
+        List<Pemesanan> pemesananList = pemesananRepository.findAllByStatusEquals(status);
+        int total = pemesananList.size();
+        statusPemesanan.setTotal(total);
+        statusPemesanan.setPemesananList(pemesananList);
+
+        return statusPemesanan;
     }
 
     @Override
@@ -120,16 +135,11 @@ public class PemesananServiceImpl implements PemesananService{
 
     @Override
     public Pemesanan findById(Long id) {
-        BaseResponse baseResponse = new BaseResponse();
-        DetailPemesananDTO detailPemesananDTO = new DetailPemesananDTO();
 
         Pemesanan pemesanan = pemesananRepository.findById(id)
                 .orElseThrow(()->new DataNotFoundException(id));
 
-        baseResponse.setStatus(HttpStatus.OK);
-        baseResponse.setData(pemesanan);
-        baseResponse.setMessage("pengambilan data pemesanan dengan id "+id+" berhasil dilakukan");
-        return pemesanan;
+       return pemesanan;
     }
 
     @Override

@@ -25,16 +25,6 @@ public class Pemesanan extends AuditModel {
     private int orang;
     private Long total;
     private String status;
-//
-//    @OneToMany(cascade = CascadeType.ALL,
-//    fetch = FetchType.LAZY,
-//    mappedBy = "pemesanan")
-//    private Set<Pemesan> pemesanSet = new HashSet<>();
-//
-//    @OneToMany(cascade = CascadeType.ALL,
-//            fetch = FetchType.LAZY,
-//            mappedBy = "pemesanan")
-//    private List<Cicilan> cicilanList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")

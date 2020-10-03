@@ -10,6 +10,8 @@ import java.util.List;
 @Component
 public interface PemesanService {
     Pemesan createPemesan(Long idPemesan, Pemesan pemesan, MultipartFile ktp, MultipartFile paspor);
+    Pemesan createPemesanBase64(Long idPemesan, Pemesan pemesan, String ktp, String paspor);
+
     Pemesan updatePemesan(Long id, Pemesan pemesan, MultipartFile ktp, MultipartFile paspor);
 
     List<Pemesan> getPemesan(Long idPemesanan);
