@@ -9,17 +9,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/save")
+@RequestMapping("/tabungan")
 public class TabunganController {
     @Autowired
     private TabunganService tabunganService;
 
     @PostMapping()
     public BaseResponse createSave(@ModelAttribute Tabungan tabungan,
-                                   @RequestParam MultipartFile[] foto){
-        return tabunganService.saveSave(tabungan, foto);
+                                   @RequestParam MultipartFile gambar_tabungan){
+        return tabunganService.saveTabungan(tabungan, gambar_tabungan);
     }
-
     @GetMapping("/all")
     public BaseResponse getAll() {
         return tabunganService.findAll();

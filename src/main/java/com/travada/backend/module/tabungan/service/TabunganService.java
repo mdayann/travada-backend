@@ -8,9 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public interface TabunganService {
-    BaseResponse saveSave (Tabungan tabungan, MultipartFile[] foto);
+    BaseResponse saveTabungan (Tabungan tabungan, MultipartFile gambar_tabungan);
 
-    BaseResponse editById(Long id, Tabungan tabungan, MultipartFile[] foto);
+    BaseResponse editById(Long id, Tabungan tabungan, MultipartFile gambar_tabungan);
 
     BaseResponse findAll();
 

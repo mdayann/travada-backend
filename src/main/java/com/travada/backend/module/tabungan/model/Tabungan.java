@@ -5,10 +5,11 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 
-@Entity(name = "Save")
-@Table(name = "save")
+@Entity(name = "Tabungan")
+@Table(name = "tabungan")
 @Data
 public class Tabungan extends AuditModel {
 
@@ -27,7 +28,7 @@ public class Tabungan extends AuditModel {
 
     @Column(name = "target")
     @DateTimeFormat(pattern = "dd-MM-yyyy")
-    private Date target;
+    private LocalDate target;
 
     @Column(name = "periode")
     private String periode;
@@ -36,6 +37,9 @@ public class Tabungan extends AuditModel {
 
     @Column(name = "setoran_awal")
     private Long setoran_awal;
+
+    @Column(name = "jumlah_setoran")
+    private Long jumlah_setoran;
 
     private int jumlah_orang;
 

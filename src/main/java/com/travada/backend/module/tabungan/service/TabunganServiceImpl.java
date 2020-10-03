@@ -4,7 +4,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.travada.backend.config.CloudinaryConfig;
 import com.travada.backend.exception.DataNotFoundException;
 import com.travada.backend.module.tabungan.model.Tabungan;
-import com.travada.backend.module.tabungan.repository.PenabungRepository;
+//import com.travada.backend.module.tabungan.repository.PenabungRepository;
 import com.travada.backend.module.tabungan.repository.TabunganRepository;
 import com.travada.backend.module.user.repository.UserRepository;
 import com.travada.backend.utils.BaseResponse;
@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,31 +33,43 @@ public class TabunganServiceImpl implements TabunganService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PenabungRepository penabungRepository;
+//    @Autowired
+//    private PenabungRepository penabungRepository;
 
     @Autowired
     private CloudinaryConfig cloudinaryConfig;
 
-    @Autowired
-    private ModelMapperUtil modelMapperUtil;
+
 
     @Transactional
-    public BaseResponse saveTabungan(Tabungan tabungan, MultipartFile[] foto) {
+    public BaseResponse saveTabungan(Tabungan tabungan,
+                                     MultipartFile gambar_tabungan) {
         BaseResponse baseResponse = new BaseResponse();
-        List<String> gambar = new ArrayList<>();
-        if (foto != null) {
-            for (MultipartFile file : foto) {
-                try {
-                    Map uploadResult = cloudinaryConfig.upload(file.getBytes(),
-                            ObjectUtils.asMap("resourcetype", "auto"));
-                    gambar.add((uploadResult.get("url").toString()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        try {
+            Map uploadResult = cloudinaryConfig.upload(gambar_tabungan.getBytes(),
+                    ObjectUtils.asMap("resourcetype", "auto"));
+
+            tabungan.setGambar_tabungan(uploadResult.get("url").toString());
+
+        } catch (IOException e) {
+            return new BaseResponse
+                    (HttpStatus.BAD_REQUEST,
+                            null,
+                            "Upload foto gagal");
         }
-        tabungan.setGambar_tabungan(gambar);
+        Period periode = Period.between(tabungan.getTarget(), LocalDate.now());
+        if (tabungan.getPeriode().toLowerCase() == "harian") {
+            tabungan.setJumlah_setoran((tabungan.getJumlah_tabungan() - (tabungan.getSetoran_awal() * tabungan.getJumlah_orang())) /
+                    periode.getDays() * tabungan.getJumlah_orang());
+        }
+        else if (tabungan.getPeriode().toLowerCase() == "mingguan") {
+            tabungan.setJumlah_setoran((tabungan.getJumlah_tabungan() - (tabungan.getSetoran_awal() * tabungan.getJumlah_orang())) /
+                    (periode.getDays() / 7) * tabungan.getJumlah_orang());
+        }
+        else if (tabungan.getPeriode().toLowerCase() == "bulanan") {
+            tabungan.setJumlah_setoran((tabungan.getJumlah_tabungan() - (tabungan.getSetoran_awal() * tabungan.getJumlah_orang())) /
+                    (periode.getMonths() * tabungan.getJumlah_orang()));
+        }
         tabunganRepository.save(tabungan);
         baseResponse.setStatus(HttpStatus.CREATED);
         baseResponse.setData(tabungan);
@@ -65,24 +79,23 @@ public class TabunganServiceImpl implements TabunganService {
     }
 
     @Transactional
-    public BaseResponse editById(Long id, Tabungan newTabungan, MultipartFile[]foto) {
+    public BaseResponse editById(Long id, Tabungan newTabungan, MultipartFile gambar_tabungan) {
         BaseResponse baseResponse = new BaseResponse();
 
         Tabungan tabungan = tabunganRepository.findById(id)
                 .orElseThrow(() ->
                         new DataNotFoundException(id));
-        if (foto != null) {
-            List<String> gambar = new ArrayList<>();
-            for (MultipartFile file : foto) {
-                try {
-                    Map uploadResult = cloudinaryConfig.upload(file.getBytes(),
-                            ObjectUtils.asMap("resourcetype", "auto"));
-                    gambar.add(uploadResult.get("url").toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            tabungan.setGambar_tabungan(gambar);
+        try {
+            Map uploadResult = cloudinaryConfig.upload(gambar_tabungan.getBytes(),
+                    ObjectUtils.asMap("resourcetype", "auto"));
+
+            tabungan.setGambar_tabungan(uploadResult.get("url").toString());
+
+        } catch (IOException e) {
+            return new BaseResponse
+                    (HttpStatus.BAD_REQUEST,
+                            null,
+                            "Upload foto gagal");
         }
         if (newTabungan.getTujuan() != null) {
             tabungan.setTujuan(newTabungan.getTujuan());
@@ -134,53 +147,5 @@ public class TabunganServiceImpl implements TabunganService {
         return baseResponse;
     }
 
-    @Transactional
-    public BaseResponse editById(Long id, Tabungan newTabungan, MultipartFile[] foto) {
-        BaseResponse baseResponse = new BaseResponse();
 
-        Tabungan tabungan = tabunganRepository.findById(id)
-                .orElseThrow(() ->
-                        new DataNotFoundException(id)
-                );
-        if (newTabungan.getTujuan() != null) {
-            tabungan.setTujuan(newTabungan.getTujuan());
-        }
-        if (newTabungan.getJumlah_tabungan() != null) {
-            tabungan.setJumlah_tabungan(newTabungan.getJumlah_tabungan());
-        }
-        if (foto != null) {
-            List<String> gambar = new ArrayList<>();
-            for (MultipartFile file : foto) {
-                try {
-                    Map uploadResult = cloudinaryConfig.upload(file.getBytes(),
-                            ObjectUtils.asMap("resourcetype", "auto"));
-                    gambar.add(uploadResult.get("url").toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            tabungan.setGambar_tabungan(gambar);
-        }
-        if (newTabungan.getSetoran_awal() != null) {
-            tabungan.setSetoran_awal(newTabungan.getSetoran_awal());
-
-        }
-        if (newTabungan.getPeriode() != null) {
-            tabungan.setPeriode(newTabungan.getPeriode());
-
-        }
-        tabungan.setJumlah_orang(newTabungan.getJumlah_orang());
-
-        if (newTabungan.getTarget() != null ) {
-            tabungan.setTarget(newTabungan.getTarget());
-        }
-
-
-        tabunganRepository.save(tabungan);
-
-        baseResponse.setStatus(HttpStatus.CREATED);
-        baseResponse.setData(tabungan);
-        baseResponse.setMessage("Data dengan id " + tabungan.getId() + " telah diupdate");
-        return baseResponse;
-    }
 }
